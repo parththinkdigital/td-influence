@@ -1,0 +1,43 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-wise: 'Wise Sans', 'Inter', 'Manrope', ui-sans-serif, system-ui, sans-serif;
+
+    /* Wise Brand Palette */
+    --color-wise-primary: #9fe870;
+    --color-wise-primary-active: #cdffad;
+    --color-wise-primary-neutral: #c5edab;
+    --color-wise-primary-pale: #e2f6d5;
+
+    --color-wise-canvas: #ffffff;
+    --color-wise-canvas-soft: #e8ebe6;
+
+    --color-wise-ink: #0e0f0c;
+    --color-wise-ink-deep: #163300;
+    --color-wise-body: #454745;
+    --color-wise-mute: #868685;
+
+    --color-wise-positive: #2ead4b;
+    --color-wise-positive-deep: #054d28;
+    --color-wise-warning: #ffd11a;
+    --color-wise-warning-deep: #b86700;
+    --color-wise-warning-content: #4a3b1c;
+    --color-wise-negative: #d03238;
+    --color-wise-negative-deep: #a72027;
+    --color-wise-negative-darkest: #a7000d;
+    --color-wise-negative-bg: #320707;
+
+    --color-wise-accent-orange: #ffc091;
+    --color-wise-accent-cyan: #38c8ff;
+}
+
+@layer utilities {
+    .font-wise {
+        font-family: var(--font-wise);
+    }
+}
+
