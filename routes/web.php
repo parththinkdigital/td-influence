@@ -37,6 +37,7 @@ Route::get('/influencers/{username}', [PublicController::class, 'influencerShow'
 Route::get('/font-pair', [PublicController::class, 'fontPairs'])->name('font.pairs');
 Route::get('/light', [PublicController::class, 'homeLight'])->name('home.light');
 Route::get('/light2', [PublicController::class, 'homeLight2'])->name('home.light2');
+Route::get('/light3', [PublicController::class, 'homeLight3'])->name('home.light3');
 Route::get('/dark', [PublicController::class, 'homeDark'])->name('home.dark');
 Route::get('/dark2', [PublicController::class, 'homeDark2'])->name('home.dark2');
 Route::get('/dark3', [PublicController::class, 'homeDark3'])->name('home.dark3');

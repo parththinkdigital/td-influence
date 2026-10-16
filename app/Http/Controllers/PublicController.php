@@ -370,6 +370,11 @@ class PublicController extends Controller
         return view('home-light2');
     }
 
+    public function homeLight3()
+    {
+        return view('home-light3');
+    }
+
     public function homeDark()
     {
         $featuredCampaigns = Campaign::where('status', 'published')
