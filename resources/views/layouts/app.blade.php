@@ -284,71 +284,475 @@
         @yield('content')
     </main>
 
-    <!-- Editorial Footer (Light Mode) -->
-    <footer class="bg-white border-t border-slate-200 mt-24 text-slate-600 text-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-10">
-                <!-- Brand Info -->
-                <div class="md:col-span-2 space-y-4">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center font-display font-black text-white text-base">
-                            TM
+    <!-- Immersive Footer inspired by carolynlee.me -->
+    <footer class="relative mt-24" id="site-footer">
+        <div id="tm-footer-inner" class="relative flex w-full flex-col overflow-hidden"
+             style="background-image:url('/footer-scene.jpg');background-size:cover;background-position:center 60%;min-height:100vh;">
+
+            {{-- Paper SVG — covers FULL footer height; JS sets viewBox + punches holes --}}
+            <svg id="tm-paper-svg" class="absolute inset-0 z-10 block h-full w-full" preserveAspectRatio="none" viewBox="0 0 1440 600" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;">
+                <defs>
+                    <filter id="tmGrain" x="0" y="0" width="100%" height="100%">
+                        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="5"/>
+                        <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .07 0"/>
+                        <feComposite in2="SourceGraphic" operator="in"/>
+                    </filter>
+                    <mask id="tmPaperMask" maskUnits="userSpaceOnUse" x="0" y="0" width="1440" height="600">
+                        <rect id="tm-mask-bg" x="0" y="0" width="1440" height="600" fill="white"/>
+                        {{-- JS appends one <path fill="black"> per click — they accumulate --}}
+                    </mask>
+                </defs>
+                {{-- Green paper — top portion only; JS updates height to match content div --}}
+                <rect id="tm-green-rect" x="0" y="0" width="1440" height="320" fill="#9CC4A4" mask="url(#tmPaperMask)"/>
+                <rect id="tm-grain-rect" x="0" y="0" width="1440" height="320" fill="#000" mask="url(#tmPaperMask)" filter="url(#tmGrain)" opacity="0.4" style="mix-blend-mode:multiply"/>
+            </svg>
+
+            {{-- Content area — sits above the SVG --}}
+            <div id="tm-content-div" class="relative" style="min-height:55vh;">
+                {{-- Footer Content --}}
+                <div class="pointer-events-none relative z-20 flex flex-col justify-between gap-8 px-6 py-8 sm:px-12 sm:py-10" style="color:#12161d; min-height:55vh;">
+
+                    {{-- Top row: brand + nav columns --}}
+                    <div class="flex flex-col gap-8 md:grid md:items-start" style="grid-template-columns: 1.6fr auto auto auto; gap: 3.5rem;">
+
+                        {{-- Brand --}}
+                        <div>
+                            <span class="block font-sans font-black leading-none" style="font-size:clamp(32px,5vw,58px);letter-spacing:-0.03em;opacity:0.65;color:#12161d;">
+                                Talent<br>Marketplace
+                            </span>
+                            <p class="mt-3 text-xs leading-relaxed max-w-xs font-mono" style="color:#12161d;opacity:0.6;">
+                                The full-cycle talent platform connecting premium brands with verified models, influencers, anchors & UGC creators.
+                            </p>
                         </div>
-                        <span class="text-lg font-black font-display text-slate-900">Talent<span class="text-brand-600">Marketplace</span></span>
+
+                        {{-- Discover --}}
+                        <nav aria-label="Discover" class="pointer-events-auto">
+                            <h4 class="mb-3 font-mono text-[10px] font-normal uppercase tracking-[0.14em]" style="color:#12161d;opacity:0.55;">Discover</h4>
+                            <ul class="flex flex-col gap-2 font-sans text-[14px]" style="color:#12161d;">
+                                <li><a href="{{ route('influencers.public', ['talent_type' => 'influencer']) }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Social Influencers</a></li>
+                                <li><a href="{{ route('influencers.public', ['talent_type' => 'modeling']) }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Fashion Models</a></li>
+                                <li><a href="{{ route('influencers.public', ['talent_type' => 'anchor']) }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Event Anchors</a></li>
+                                <li><a href="{{ route('influencers.public', ['talent_type' => 'ugc']) }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">UGC Creators</a></li>
+                                <li><a href="{{ route('campaigns.public') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Open Briefs</a></li>
+                            </ul>
+                        </nav>
+
+                        {{-- Platform --}}
+                        <nav aria-label="Platform" class="pointer-events-auto">
+                            <h4 class="mb-3 font-mono text-[10px] font-normal uppercase tracking-[0.14em]" style="color:#12161d;opacity:0.55;">Platform</h4>
+                            <ul class="flex flex-col gap-2 font-sans text-[14px]" style="color:#12161d;">
+                                <li><a href="{{ route('how-it-works') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">How It Works</a></li>
+                                <li><a href="{{ route('pricing') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Pricing & Escrow</a></li>
+                                <li><a href="{{ route('about') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">About</a></li>
+                                <li><a href="{{ route('contact') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Contact & Help</a></li>
+                            </ul>
+                        </nav>
+
+                        {{-- Portals + Social --}}
+                        <div class="pointer-events-auto">
+                            <h4 class="mb-3 font-mono text-[10px] font-normal uppercase tracking-[0.14em]" style="color:#12161d;opacity:0.55;">Portals</h4>
+                            <ul class="flex flex-col gap-2 font-sans text-[14px]" style="color:#12161d;">
+                                <li><a href="{{ route('brand.login') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Brand Studio</a></li>
+                                <li><a href="{{ route('login') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Creator Studio</a></li>
+                                <li><a href="{{ route('admin.login') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Admin Gateway</a></li>
+                                <li><a href="{{ route('register') }}" class="pointer-events-auto font-bold transition-opacity hover:opacity-60" style="color:#12161d;">+ Create Account ↗</a></li>
+                            </ul>
+                            <div class="mt-5">
+                                <h4 class="mb-3 font-mono text-[10px] font-normal uppercase tracking-[0.14em]" style="color:#12161d;opacity:0.55;">Legal</h4>
+                                <ul class="flex flex-col gap-2 font-sans text-[14px]" style="color:#12161d;">
+                                    <li><a href="{{ route('privacy') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Privacy Policy</a></li>
+                                    <li><a href="{{ route('terms') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Terms of Service</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
                     </div>
-                    <p class="text-slate-500 text-xs leading-relaxed max-w-sm">
-                        The full-cycle talent marketplace connecting premium brands with verified fashion models, social media influencers, event anchors, and UGC video creators.
-                    </p>
-                    <div class="flex items-center space-x-3 pt-2 text-xs text-slate-600">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200"><i data-lucide="shield-check" class="w-3.5 h-3.5 text-indigo-600"></i> Escrow Protected</span>
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200"><i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-600"></i> Live API Verified Reach</span>
+
+                    {{-- Bottom bar --}}
+                    <div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.1em]" style="color:#12161d;opacity:0.55;">
+                        <span>&copy; {{ date('Y') }} Talent Marketplace · Built with precision &amp; passion</span>
+                        <span class="flex items-center gap-[10px] whitespace-nowrap">
+                            <span id="tm-footer-pulse" class="inline-block h-1.5 w-1.5 rounded-full" style="background:#12161d;animation:tmPulse 1.6s ease-in-out infinite;"></span>
+                            click to punch &nbsp;·&nbsp; ← → to cycle shapes
+                        </span>
                     </div>
-                </div>
 
-                <!-- Column 1: Discover -->
-                <div>
-                    <h4 class="text-slate-900 font-bold text-xs uppercase tracking-widest font-display mb-4">Discover</h4>
-                    <ul class="space-y-2.5 text-xs text-slate-600 font-medium">
-                        <li><a href="{{ route('influencers.public', ['talent_type' => 'influencer']) }}" class="hover:text-slate-900 transition">Social Influencers</a></li>
-                        <li><a href="{{ route('influencers.public', ['talent_type' => 'modeling']) }}" class="hover:text-slate-900 transition">Fashion Models</a></li>
-                        <li><a href="{{ route('influencers.public', ['talent_type' => 'anchor']) }}" class="hover:text-slate-900 transition">Event Anchors & Emcees</a></li>
-                        <li><a href="{{ route('influencers.public', ['talent_type' => 'ugc']) }}" class="hover:text-slate-900 transition">UGC Video Creators</a></li>
-                        <li><a href="{{ route('campaigns.public') }}" class="hover:text-slate-900 transition">Open Campaign Briefs</a></li>
-                    </ul>
-                </div>
-
-                <!-- Column 2: Platform -->
-                <div>
-                    <h4 class="text-slate-900 font-bold text-xs uppercase tracking-widest font-display mb-4">Platform</h4>
-                    <ul class="space-y-2.5 text-xs text-slate-600 font-medium">
-                        <li><a href="{{ route('how-it-works') }}" class="hover:text-slate-900 transition">How It Works</a></li>
-                        <li><a href="{{ route('pricing') }}" class="hover:text-slate-900 transition">Pricing & Escrow Fees</a></li>
-                        <li><a href="{{ route('about') }}" class="hover:text-slate-900 transition">About the Platform</a></li>
-                        <li><a href="{{ route('contact') }}" class="hover:text-slate-900 transition">Contact & Help</a></li>
-                    </ul>
-                </div>
-
-                <!-- Column 3: Portals -->
-                <div>
-                    <h4 class="text-slate-900 font-bold text-xs uppercase tracking-widest font-display mb-4">Portals</h4>
-                    <ul class="space-y-2.5 text-xs text-slate-600 font-medium">
-                        <li><a href="{{ route('brand.login') }}" class="hover:text-slate-900 transition">Brand Studio Login</a></li>
-                        <li><a href="{{ route('login') }}" class="hover:text-slate-900 transition">Creator Studio Login</a></li>
-                        <li><a href="{{ route('admin.login') }}" class="hover:text-slate-900 transition">Admin Gateway</a></li>
-                        <li><a href="{{ route('register') }}" class="text-brand-600 hover:text-brand-700 transition font-bold">+ Create Account</a></li>
-                    </ul>
                 </div>
             </div>
 
-            <div class="border-t border-slate-200 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-                <p>&copy; {{ date('Y') }} Talent Marketplace. Powered by official Meta, Google & X API integrations.</p>
-                <div class="flex items-center space-x-6">
-                    <a href="{{ route('privacy') }}" class="hover:text-slate-700 transition">Privacy Policy</a>
-                    <a href="{{ route('terms') }}" class="hover:text-slate-700 transition">Terms of Service</a>
-                </div>
-            </div>
+            {{-- Lower scenic area (Layer 2) --}}
+            <div id="tm-scenic-area" style="min-height:45vh;flex:1;display:block;"></div>
+
+            {{-- Falling / Draggable punched shapes layer --}}
+            <div class="pointer-events-none absolute inset-0 z-30" id="tm-footer-shape-layer" style="overflow:hidden;"></div>
+
+            {{-- New sheet / reset button --}}
+            <button id="tm-new-sheet-btn"
+                    class="absolute z-40 inline-flex items-center gap-2 rounded-full font-mono text-[10px] uppercase tracking-[0.12em] text-white opacity-90 hover:opacity-100 transition-opacity"
+                    style="right:18px;bottom:18px;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);border:0;padding:9px 16px 9px 12px;cursor:pointer;">
+                <svg width="11" height="11" viewBox="0 0 11 11">
+                    <path d="M1 5.5 A 4.5 4.5 0 1 1 5.5 10" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+                    <path d="M1 1 V 5.5 H 5.5" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                new sheet
+            </button>
+
         </div>
     </footer>
+
+    {{-- Custom cursor: shape outline, follows mouse, only visible inside footer --}}
+    <div id="tm-cursor" aria-hidden="true" style="position:fixed;top:0;left:0;pointer-events:none;z-index:99999;display:none;will-change:transform;">
+        <svg width="80" height="80" viewBox="-40 -40 80 80" style="display:block;overflow:visible;">
+            <path id="tm-cursor-path"
+                  d="M 0 -42 C 22 -52 42 -32 32 -10 C 50 -2 50 26 26 30 C 30 50 4 56 -4 38 C -22 52 -42 32 -32 14 C -52 8 -48 -22 -26 -22 C -22 -42 -10 -50 0 -42 Z"
+                  fill="none"
+                  stroke="rgba(18,22,29,0.85)"
+                  stroke-width="1.8"
+                  style="transform:scale(0.85);"/>
+        </svg>
+    </div>
+
+    <style>
+        @keyframes tmPulse {
+            0%,100% { opacity:1;  transform:scale(1);   }
+            50%      { opacity:.35; transform:scale(.6); }
+        }
+        /* Hide native cursor only inside the green paper zone */
+        #tm-content-div,
+        #tm-content-div * { cursor: none !important; }
+        #tm-content-div a,
+        #tm-content-div button { cursor: pointer !important; }
+        /* Scenic photo area keeps its native cursor */
+        #tm-scenic-area { cursor: auto; }
+    </style>
+
+    <script>
+    (function () {
+        'use strict';
+
+        /* ── Shape library ────────────────────────────── */
+        var SHAPES = [
+            /* flower  */ 'M 0 -42 C 22 -52 42 -32 32 -10 C 50 -2 50 26 26 30 C 30 50 4 56 -4 38 C -22 52 -42 32 -32 14 C -52 8 -48 -22 -26 -22 C -22 -42 -10 -50 0 -42 Z',
+            /* star    */ 'M 0 -44 L 10 -15 L 40 -15 L 16 5 L 26 34 L 0 18 L -26 34 L -16 5 L -40 -15 L -10 -15 Z',
+            /* heart   */ 'M 0 38 C -4 34 -40 14 -40 -10 C -40 -28 -26 -40 0 -20 C 26 -40 40 -28 40 -10 C 40 14 4 34 0 38 Z',
+            /* blob    */ 'M 38 -8 C 44 12 28 42 4 44 C -20 46 -44 28 -42 4 C -40 -20 -18 -44 8 -42 C 34 -40 32 -28 38 -8 Z',
+            /* diamond */ 'M 0 -44 L 30 0 L 0 44 L -30 0 Z',
+        ];
+
+        var SHAPE_HALF = 44;
+        var HOLE_RADIUS = 50;
+
+        var shapeIdx = 0;
+
+        /* DOM refs */
+        var footerEl, paperSvgEl, maskEl, contentDivEl, greenRectEl, grainRectEl, maskBgEl;
+        var shapeLayerEl;
+        var cursorEl, cursorPathEl;
+        var btnEl;
+
+        /* ViewBox dimensions — set dynamically in init() */
+        var VB_W = 1440, VB_H = 600;
+
+        /* ── Helpers ──────────────────────────────────── */
+        function mod(n, m) { return ((n % m) + m) % m; }
+
+        function clientToSvgCoords(cx, cy) {
+            var rect = paperSvgEl.getBoundingClientRect();
+            return {
+                x: ((cx - rect.left) / rect.width)  * VB_W,
+                y: ((cy - rect.top)  / rect.height) * VB_H
+            };
+        }
+
+        /* ── Create a falling / draggable cutout piece ──── */
+        function spawnFallingPiece(clientX, clientY, currentPath, rotAngle) {
+            if (!shapeLayerEl) return;
+            var layerRect = shapeLayerEl.getBoundingClientRect();
+            var startX = clientX - layerRect.left;
+            var startY = clientY - layerRect.top;
+
+            // Target landing zone in the lower scenic area (Layer 2)
+            var layerHeight = layerRect.height;
+            var cRect = contentDivEl ? contentDivEl.getBoundingClientRect() : null;
+            var contentBottom = cRect ? (cRect.bottom - layerRect.top) : (layerHeight * 0.55);
+            var landingMinY = contentBottom + 25;
+            var landingMaxY = layerHeight - 75;
+            if (landingMaxY <= landingMinY) {
+                landingMaxY = layerHeight - 40;
+                landingMinY = Math.max(contentBottom + 10, layerHeight - 80);
+            }
+
+            // Target Y with random variation and slight horizontal drift
+            var targetY = landingMinY + Math.random() * (landingMaxY - landingMinY);
+            var driftX = (Math.random() - 0.5) * 80;
+            var targetX = Math.max(30, Math.min(layerRect.width - 70, startX + driftX));
+            var targetRot = parseFloat(rotAngle) + (Math.random() * 90 - 45);
+
+            var svgNs = 'http://www.w3.org/2000/svg';
+            var pieceSvg = document.createElementNS(svgNs, 'svg');
+            pieceSvg.setAttribute('width', '84');
+            pieceSvg.setAttribute('height', '84');
+            pieceSvg.setAttribute('viewBox', '-42 -42 84 84');
+            pieceSvg.style.position = 'absolute';
+            pieceSvg.style.left = '0';
+            pieceSvg.style.top = '0';
+            pieceSvg.style.pointerEvents = 'auto';
+            pieceSvg.style.cursor = 'grab';
+            pieceSvg.style.touchAction = 'none';
+            pieceSvg.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.22))';
+            pieceSvg.style.willChange = 'transform';
+            pieceSvg.style.transform = 'translate(' + (startX - 42) + 'px,' + (startY - 42) + 'px) rotate(' + rotAngle + 'deg)';
+
+            var p = document.createElementNS(svgNs, 'path');
+            p.setAttribute('d', currentPath);
+            p.setAttribute('fill', '#9CC4A4');
+            p.setAttribute('stroke', 'rgba(18,22,29,0.08)');
+            p.setAttribute('stroke-width', '1');
+            pieceSvg.appendChild(p);
+
+            shapeLayerEl.appendChild(pieceSvg);
+
+            // Animate fall using smooth gravity curve
+            var posX = startX - 42;
+            var posY = startY - 42;
+            var endPosX = targetX - 42;
+            var endPosY = targetY - 42;
+            var currentRot = parseFloat(rotAngle) || 0;
+
+            var fallDuration = 850 + Math.random() * 250; // ms
+
+            // Store current position for dragging
+            var state = {
+                x: startX - 42,
+                y: startY - 42,
+                rot: currentRot,
+                isDragging: false,
+                isFalling: true,
+                startX: 0,
+                startY: 0,
+                initialX: 0,
+                initialY: 0
+            };
+
+            // Start drop animation
+            requestAnimationFrame(function () {
+                pieceSvg.style.transition = 'transform ' + (fallDuration / 1000) + 's cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.25s';
+                pieceSvg.style.transform = 'translate(' + endPosX + 'px,' + endPosY + 'px) rotate(' + targetRot + 'deg)';
+            });
+
+            var fallTimer = setTimeout(function () {
+                state.isFalling = false;
+                state.x = endPosX;
+                state.y = endPosY;
+                state.rot = targetRot;
+                pieceSvg.style.transition = 'filter 0.2s';
+            }, fallDuration);
+
+            // Make the piece draggable
+            function onDragStart(e) {
+                if (state.isFalling) {
+                    clearTimeout(fallTimer);
+                    state.isFalling = false;
+                    // Freeze at current computed transform
+                    var style = window.getComputedStyle(pieceSvg);
+                    var matrix = style.transform;
+                    if (matrix && matrix !== 'none') {
+                        var values = matrix.split('(')[1].split(')')[0].split(',');
+                        var a = parseFloat(values[0]);
+                        var b = parseFloat(values[1]);
+                        var tx = parseFloat(values[4]);
+                        var ty = parseFloat(values[5]);
+                        state.x = isNaN(tx) ? endPosX : tx;
+                        state.y = isNaN(ty) ? endPosY : ty;
+                        state.rot = isNaN(a) ? targetRot : Math.round(Math.atan2(b, a) * (180 / Math.PI));
+                    }
+                }
+                state.isDragging = true;
+                pieceSvg.style.transition = 'none';
+                pieceSvg.style.cursor = 'grabbing';
+                pieceSvg.style.filter = 'drop-shadow(0 12px 24px rgba(0,0,0,0.38))';
+                var pt = e.touches ? e.touches[0] : e;
+                state.startX = pt.clientX;
+                state.startY = pt.clientY;
+                state.initialX = state.x;
+                state.initialY = state.y;
+
+                function onDragMove(moveEvt) {
+                    if (!state.isDragging) return;
+                    var mPt = moveEvt.touches ? moveEvt.touches[0] : moveEvt;
+                    var dx = mPt.clientX - state.startX;
+                    var dy = mPt.clientY - state.startY;
+                    state.x = state.initialX + dx;
+                    state.y = state.initialY + dy;
+                    state.rot += (dx * 0.08);
+                    pieceSvg.style.transform = 'translate(' + state.x + 'px,' + state.y + 'px) rotate(' + state.rot + 'deg)';
+                    moveEvt.preventDefault();
+                }
+
+                function onDragEnd() {
+                    state.isDragging = false;
+                    pieceSvg.style.cursor = 'grab';
+                    pieceSvg.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.22))';
+                    document.removeEventListener('mousemove', onDragMove);
+                    document.removeEventListener('mouseup', onDragEnd);
+                    document.removeEventListener('touchmove', onDragMove);
+                    document.removeEventListener('touchend', onDragEnd);
+                }
+
+                document.addEventListener('mousemove', onDragMove);
+                document.addEventListener('mouseup', onDragEnd);
+                document.addEventListener('touchmove', onDragMove, { passive: false });
+                document.addEventListener('touchend', onDragEnd);
+
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            pieceSvg.addEventListener('mousedown', onDragStart);
+            pieceSvg.addEventListener('touchstart', onDragStart, { passive: false });
+        }
+
+        /* ── Punch hole — ACCUMULATES, never replaces ──── */
+        function punchAt(cx, cy) {
+            if (!maskEl) { return; }
+            var pt = clientToSvgCoords(cx, cy);
+            var scale = HOLE_RADIUS / SHAPE_HALF;
+            var rot = (Math.random() * 60 - 30).toFixed(1);
+
+            // 1. Cut hole in the green paper mask
+            var hole = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            hole.setAttribute('fill', 'black');
+            hole.setAttribute('d', SHAPES[shapeIdx]);
+            hole.setAttribute('transform',
+                'translate(' + pt.x.toFixed(1) + ' ' + pt.y.toFixed(1) + ')'
+                + ' rotate(' + rot + ')'
+                + ' scale(' + scale.toFixed(3) + ')');
+            maskEl.appendChild(hole);
+
+            // 2. Spawn the cut piece and drop it down to the scenic bottom area
+            spawnFallingPiece(cx, cy, SHAPES[shapeIdx], rot);
+        }
+
+        /* ── Shape change ── */
+        function applyShape() {
+            var d = SHAPES[shapeIdx];
+            if (cursorPathEl) { cursorPathEl.setAttribute('d', d); }
+        }
+
+        /* ── Custom cursor ────────────────────────────── */
+        function moveCursor(cx, cy) {
+            if (!cursorEl) { return; }
+            cursorEl.style.transform = 'translate(' + (cx - 40) + 'px,' + (cy - 40) + 'px)';
+        }
+
+        /* ── Cycle shapes ─────────────────────────────── */
+        function cycleShape(delta) {
+            shapeIdx = mod(shapeIdx + delta, SHAPES.length);
+            applyShape();
+        }
+
+        /* ── Reset sheet ──────────────────────────────── */
+        function resetSheet() {
+            // Remove all punched holes from mask
+            if (maskEl) {
+                var holes = maskEl.querySelectorAll('path');
+                holes.forEach(function (h) { h.remove(); });
+            }
+            // Remove all falling cutouts
+            if (shapeLayerEl) {
+                shapeLayerEl.innerHTML = '';
+            }
+        }
+
+        /* ── Init ─────────────────────────────────────── */
+        function init() {
+            footerEl     = document.getElementById('site-footer');
+            paperSvgEl   = document.getElementById('tm-paper-svg');
+            maskEl       = document.getElementById('tmPaperMask');
+            maskBgEl     = document.getElementById('tm-mask-bg');
+            greenRectEl  = document.getElementById('tm-green-rect');
+            grainRectEl  = document.getElementById('tm-grain-rect');
+            contentDivEl = document.getElementById('tm-content-div');
+            shapeLayerEl = document.getElementById('tm-footer-shape-layer');
+            cursorEl     = document.getElementById('tm-cursor');
+            cursorPathEl = document.getElementById('tm-cursor-path');
+            btnEl        = document.getElementById('tm-new-sheet-btn');
+
+            if (!footerEl || !paperSvgEl || !maskEl) { return; }
+
+            function updateDimensions() {
+                var innerEl = document.getElementById('tm-footer-inner');
+                if (!innerEl || !paperSvgEl || !maskEl) { return; }
+                VB_H = Math.round(innerEl.getBoundingClientRect().height) || 600;
+                paperSvgEl.setAttribute('viewBox', '0 0 ' + VB_W + ' ' + VB_H);
+                if (maskBgEl) {
+                    maskBgEl.setAttribute('height', VB_H);
+                    maskBgEl.setAttribute('width', VB_W);
+                }
+                maskEl.setAttribute('height', VB_H);
+                maskEl.setAttribute('width', VB_W);
+
+                if (contentDivEl) {
+                    var pxH = contentDivEl.getBoundingClientRect().height;
+                    var vbH = Math.round((pxH / innerEl.getBoundingClientRect().height) * VB_H);
+                    if (greenRectEl) { greenRectEl.setAttribute('height', vbH); }
+                    if (grainRectEl) { grainRectEl.setAttribute('height', vbH); }
+                }
+            }
+
+            updateDimensions();
+            window.addEventListener('resize', updateDimensions);
+            window.addEventListener('load', updateDimensions);
+
+            /* ── Paper zone: full green paper section (content div), NOT the scenic photo below ── */
+            function isInPaperZone(clientY) {
+                if (!contentDivEl) { return true; }
+                var r = contentDivEl.getBoundingClientRect();
+                return clientY >= r.top && clientY <= r.bottom;
+            }
+
+            /* ── Footer mouse events ── */
+            footerEl.addEventListener('mouseenter', function (e) {
+                if (cursorEl && isInPaperZone(e.clientY)) { cursorEl.style.display = 'block'; }
+            });
+            footerEl.addEventListener('mouseleave', function () {
+                if (cursorEl) { cursorEl.style.display = 'none'; }
+            });
+            footerEl.addEventListener('mousemove', function (e) {
+                if (isInPaperZone(e.clientY)) {
+                    moveCursor(e.clientX, e.clientY);
+                    if (cursorEl) { cursorEl.style.display = 'block'; }
+                } else {
+                    if (cursorEl) { cursorEl.style.display = 'none'; }
+                }
+            });
+
+            /* Click punches a hole only in the green paper zone */
+            footerEl.addEventListener('click', function (e) {
+                if (!isInPaperZone(e.clientY)) { return; }  // scenic photo — no punch
+                if (e.target.closest('a') || e.target.closest('button')) { return; }
+                if (e.target.closest('svg') && e.target.closest('svg').parentNode === shapeLayerEl) { return; }
+                punchAt(e.clientX, e.clientY);
+            });
+
+            /* New sheet button */
+            if (btnEl) {
+                btnEl.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    resetSheet();
+                });
+            }
+
+            /* Arrow key cycling */
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'ArrowRight') { cycleShape(1); }
+                if (e.key === 'ArrowLeft')  { cycleShape(-1); }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    }());
+    </script>
 
     <script>
         function initFontAwesomeIcons() {

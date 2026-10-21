@@ -126,16 +126,182 @@
         input[type="range"].pop-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 26px; height: 26px; border-radius: 9999px; background: #D6FF3D; border: 3px solid #181528; cursor: grab; box-shadow: 0 0 0 4px rgba(214,255,61,.25); }
         input[type="range"].pop-range::-moz-range-thumb { width: 26px; height: 26px; border-radius: 9999px; background: #D6FF3D; border: 3px solid #181528; cursor: grab; }
 
-        /* Reel rail */
-        .reel-rail { scroll-snap-type: x mandatory; }
-        .reel-card { scroll-snap-align: center; }
-        .reel-bars span { transform: scaleX(0); transform-origin: left; background: rgba(255,255,255,.35); }
-        .reel-card.playing .reel-bars span { animation: barFill 7s linear infinite; }
-        @keyframes barFill { 0% { transform: scaleX(0); } 78% { transform: scaleX(1); } 100% { transform: scaleX(1); } }
-        .reel-card.playing .reel-bars span:nth-child(1) { animation-delay: 0s; }
-        .reel-card.playing .reel-bars span:nth-child(2) { animation-delay: 1.75s; }
-        .reel-card.playing .reel-bars span:nth-child(3) { animation-delay: 3.5s; }
-        .reel-card.playing .reel-bars span:nth-child(4) { animation-delay: 5.25s; }
+        /* =============================================================
+           REEL STORIES — sticker rail (self-contained section)
+           Tokens are scoped to .reel-stories so the rest of the page
+           keeps its own palette. Sticker surfaces (lime / pink) keep a
+           constant navy so their contrast survives the dark-mode flip.
+           ============================================================= */
+        .reel-stories {
+            --bg: #f8f3ea;
+            --ink: #1a1830;
+            --lime: #d8ff3e;
+            --blue: #2b4bff;
+            --pink: #fbd0dc;
+            --muted: #6b6878;
+            --navy: #1a1830;
+            background: var(--bg);
+            color: var(--ink);
+            overflow: hidden;
+            padding: clamp(56px, 7vw, 88px) 0 clamp(40px, 5vw, 64px);
+            font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+        @media (prefers-color-scheme: dark) {
+            .reel-stories {
+                --bg: #12101f;
+                --ink: #f8f3ea;
+                --muted: #a9a5b8;
+            }
+        }
+        /* Container: 1186px so the whole rail fits — 4 x 260px cards + 3 x 22px gaps
+           = 1106px, plus 16px corner clearance per side = 1138px row content,
+           plus 48px page padding = 1186px. */
+        .rs-inner { max-width: 1186px; margin: 0 auto; padding: 0 24px; }
+
+        /* Header: pill tag + heading + lead */
+        .rs-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 14px;
+            background: var(--pink);
+            color: var(--navy);
+            border: 2px solid var(--navy);
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .1em;
+        }
+        .rs-heading {
+            margin: 18px 0 0;
+            font-size: clamp(34px, 6vw, 58px);
+            line-height: .98;
+            letter-spacing: -.03em;
+            font-weight: 800;
+            color: var(--ink);
+        }
+        .rs-serif { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-weight: 400; color: var(--blue); }
+        .rs-lead {
+            margin: 16px 0 0;
+            max-width: 560px;
+            font-size: 13px;
+            line-height: 1.65;
+            color: var(--muted);
+        }
+
+        /* Rail */
+        .rs-row {
+            display: flex;
+            gap: 22px;
+            overflow-x: auto;
+            margin-top: 40px;
+            /* 16px side padding keeps the tilted card corners (they poke ~11px past
+               their box) from being clipped by the scroll container. */
+            padding: 26px 16px 34px;
+            scroll-snap-type: x proximity;
+            scroll-padding-left: 16px;
+        }
+        .rs-card {
+            position: relative;
+            flex: 0 0 auto;
+            width: 260px;
+            z-index: 1;
+            transition: opacity .6s ease, transform .6s cubic-bezier(.22, 1, .36, 1);
+            transition-delay: calc(var(--i, 0) * 60ms);
+        }
+        /* Hidden states only apply once the script has booted (.rs-anim) */
+        .reel-stories.rs-anim .rs-card { opacity: 0; transform: translateY(26px); }
+        .reel-stories.rs-anim .rs-card.is-in { opacity: 1; transform: none; }
+        .rs-card:hover { z-index: 3; }
+        .rs-card-inner {
+            position: relative;
+            width: 260px;
+            height: 420px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            border: 3px solid var(--ink);
+            border-radius: 30px;
+            box-shadow: 10px 10px 0 var(--lime);
+            background-image: linear-gradient(160deg, var(--c1), var(--c2) var(--c2s, 70%));
+            color: #fff;
+            transform: rotate(var(--rot, 0deg)) translateY(var(--shift, 0px));
+            transition: transform .3s cubic-bezier(.3, 1.6, .5, 1);
+            scroll-snap-align: start;
+        }
+        .rs-card:hover .rs-card-inner { transform: rotate(0deg) scale(1.06) translateY(-8px); }
+
+        /* Video / thumbnail layer (gradient shows when there is no video) */
+        .rs-media { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; }
+        .rs-video { display: block; width: 100%; height: 100%; object-fit: cover; }
+        .rs-scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.62), rgba(0,0,0,.06) 55%, rgba(0,0,0,.28)); }
+
+        /* Sticker badge */
+        .rs-badge {
+            position: absolute;
+            top: -14px;
+            right: -12px;
+            padding: 6px 12px;
+            background: var(--lime);
+            color: var(--navy);
+            border: 2px solid var(--navy);
+            border-radius: 999px;
+            box-shadow: 3px 3px 0 var(--ink);
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1;
+            white-space: nowrap;
+            transform: rotate(8deg);
+        }
+        .rs-badge--left { left: -12px; right: auto; background: var(--pink); transform: rotate(-8deg); }
+
+        /* Card body */
+        .rs-body { position: relative; z-index: 2; }
+        .rs-place {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            background: rgba(255,255,255,.18);
+            border: 1px solid rgba(255,255,255,.3);
+            border-radius: 999px;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .08em;
+        }
+        .rs-pin { width: 9px; height: 9px; fill: var(--lime); }
+        .rs-card-title { margin: 10px 0 14px; font-size: 22px; line-height: 1.1; font-weight: 800; color: #fff; }
+        .rs-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .rs-handle { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.92); }
+        .rs-play {
+            width: 42px;
+            height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding-left: 2px;
+            background: var(--lime);
+            color: var(--navy);
+            border: 2px solid var(--navy);
+            border-radius: 50%;
+            font-size: 13px;
+            line-height: 1;
+            cursor: pointer;
+            transition: transform .25s cubic-bezier(.3, 1.6, .5, 1);
+        }
+        .rs-play:hover { transform: scale(1.08) rotate(-6deg); }
+
+        /* Scroll reveal (vanilla JS adds .is-in) */
+        .rs-reveal { transition: opacity .7s ease, transform .7s cubic-bezier(.22, 1, .36, 1); }
+        .reel-stories.rs-anim .rs-reveal { opacity: 0; transform: translateY(22px); }
+        .reel-stories.rs-anim .rs-reveal.is-in { opacity: 1; transform: none; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .rs-reveal, .rs-card { opacity: 1 !important; transform: none !important; }
+        }
 
         /* Swipe deck */
         .match-card { touch-action: none; will-change: transform; }
@@ -228,9 +394,21 @@
             .mock-pop { animation: none !important; opacity: 1 !important; }
         }
 
+        /* Immersive paper-punch footer */
+        @keyframes tmPulse {
+            0%,100% { opacity:1;  transform:scale(1);   }
+            50%      { opacity:.35; transform:scale(.6); }
+        }
+        /* Hide native cursor only inside the green paper zone */
+        #tm-content-div,
+        #tm-content-div * { cursor: none !important; }
+        #tm-content-div a,
+        #tm-content-div button { cursor: pointer !important; }
+        /* Scenic photo area keeps its native cursor */
+        #tm-scenic-area { cursor: auto; }
+
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
-            .reel-bars span { transform: scaleX(1) !important; }
         }
     </style>
 </head>
@@ -398,61 +576,121 @@
             </div>
         </section>
 
-        <!-- ===================== REEL STORIES RAIL (VIDEO-FIRST) ===================== -->
-        <section id="stories" class="relative max-w-7xl mx-auto px-6 py-28 md:py-36">
-            <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-12">
-                <div class="max-w-2xl">
-                    <span class="reveal inline-flex items-center gap-2 rounded-full bg-magenta/15 text-ink border-2 border-ink px-4 py-1.5 text-[11px] font-mono font-bold uppercase tracking-[0.2em]">
-                        <i class="fa-solid fa-clapperboard text-[#FF2E7E]"></i> Reel Stories
-                    </span>
-                    <h2 class="reveal mt-5 font-display font-black text-ink leading-[1.03] tracking-tight" style="font-size: clamp(2.1rem, 4.4vw, 4rem)">
-                        Short-form,<br>long story. <span class="font-editorial italic text-[#2B4CFF]">Scroll it.</span>
-                    </h2>
-                </div>
-                <p class="reveal max-w-xs text-sm text-ink/60 font-medium leading-relaxed">
-                    Autoplaying, unmuted-optional, always-on reels from the roster. Each card is a chapter &mdash; read them like a story.
-                </p>
+        <!-- ===================== REEL STORIES (sticker rail) ===================== -->
+        <section id="stories" class="reel-stories">
+            <div class="rs-inner">
+                <!-- 1 · Pill tag -->
+                <span class="rs-tag rs-reveal">REEL STORIES</span>
+
+                <!-- 2 · Heading -->
+                <h2 class="rs-heading rs-reveal">Short-form,<br>long story. <em class="rs-serif">Scroll it.</em></h2>
+
+                <!-- 3 · Lead paragraph -->
+                <p class="rs-lead rs-reveal">Autoplaying, unmuted-optional, always-on reels from the roster. Each card is a chapter &mdash; read them like a story.</p>
             </div>
 
-            <div class="reel-rail no-scrollbar flex gap-5 overflow-x-auto pb-4 -mx-6 px-6">
-                @php
-                    $reels = [
-                        ['name' => 'Ananya Roy', 'handle' => '@ananya.model', 'cap' => 'Runway to reels in 48h', 'town' => 'Mumbai', 'img' => 'light3a', 'vid' => 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4'],
-                        ['name' => 'Zoya Khan', 'handle' => '@zoya.moves', 'cap' => 'The 8.8% ER truth', 'town' => 'Delhi', 'img' => 'light3b', 'vid' => 'https://test-videos.co.uk/vids/jellyfish/mp4/h264/360/Jellyfish_360_10s_1MB.mp4'],
-                        ['name' => 'Arjun Verma', 'handle' => '@arjun.reels', 'cap' => 'Gaming drops, zero flops', 'town' => 'Bengaluru', 'img' => 'light3c', 'vid' => 'https://media.w3.org/2010/05/bunny/trailer.mp4'],
-                        ['name' => 'Diya Patel', 'handle' => '@diya.grid', 'cap' => 'Hosting a room of 5,000', 'town' => 'Pune', 'img' => 'light3d', 'vid' => 'https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4'],
-                        ['name' => 'Meera Nair', 'handle' => '@meera.makes', 'cap' => 'Food reels that convert', 'town' => 'Kochi', 'img' => 'light3e', 'vid' => 'https://media.w3.org/2010/05/video/movie_300.mp4'],
-                    ];
-                @endphp
-                @foreach ($reels as $r)
-                <article class="reel-card talent-card relative shrink-0 w-[76vw] sm:w-[320px] rounded-[2rem] overflow-hidden bg-ink border-2 border-ink shadow-[8px_8px_0_#D6FF3D]">
-                    <video class="absolute inset-0 w-full h-full object-cover opacity-80" muted loop playsinline preload="metadata" poster="https://picsum.photos/seed/{{ $r['img'] }}/640/1000">
-                        <source src="{{ $r['vid'] }}" type="video/mp4">
-                    </video>
-                    <div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/20 to-ink/40"></div>
-                    <div class="relative z-10 flex flex-col justify-between h-[460px] p-4">
-                        <div class="reel-bars flex items-center gap-1.5">
-                            <span class="h-1 flex-1 rounded-full overflow-hidden"></span>
-                            <span class="h-1 flex-1 rounded-full overflow-hidden"></span>
-                            <span class="h-1 flex-1 rounded-full overflow-hidden"></span>
-                            <span class="h-1 flex-1 rounded-full overflow-hidden"></span>
-                        </div>
-                        <div>
-                            <span class="inline-flex items-center gap-1.5 rounded-full bg-white/15 backdrop-blur border border-white/25 px-3 py-1 text-[10px] font-mono font-bold uppercase tracking-widest text-white">
-                                <i class="fa-solid fa-location-dot text-lime"></i> {{ $r['town'] }}
-                            </span>
-                            <h3 class="mt-3 font-display font-black text-white text-2xl leading-tight">{{ $r['cap'] }}</h3>
-                            <div class="mt-3 flex items-center justify-between">
-                                <span class="font-mono text-xs font-bold text-white/80">{{ $r['handle'] }}</span>
-                                <span class="w-9 h-9 rounded-full bg-lime text-ink flex items-center justify-center"><i class="fa-solid fa-play text-[10px]"></i></span>
+            <!-- 4 · Reel cards — rendered from the JS data array below -->
+            <div class="rs-inner">
+                <div class="rs-row no-scrollbar" id="rsRow"></div>
+            </div>
+        </section>
+
+        <script>
+            /* =============================================================
+               REEL STORIES — card data + renderer
+               Framework-free. Drop an mp4 URL into `video` (and an
+               optional `poster`) and the gradient is swapped for the
+               real reel.
+               ============================================================= */
+            (() => {
+                const REELS = [
+                    { badge: '🔥 12.4K', city: 'MUMBAI', title: 'Runway to reels in 48h', handle: '@ananya.model', rot: '-3deg', shift: '0px', from: '#2f6b3a', to: '#142a1a', stop: '70%', side: 'right', video: null, poster: null },
+                    { badge: '👀 8.1K', city: 'DELHI', title: 'The 8.8% ER truth', handle: '@zoya.moves', rot: '2deg', shift: '18px', from: '#c2410c', to: '#3b0d3b', stop: '75%', side: 'left', video: null, poster: null },
+                    { badge: '🎮 21K', city: 'BENGALURU', title: 'Gaming drops, zero flops', handle: '@arjun.reels', rot: '-2deg', shift: '0px', from: '#3b82f6', to: '#1a1830', stop: '75%', side: 'right', video: null, poster: null },
+                    { badge: '🎤 5.6K', city: 'PUNE', title: 'Hosting a room of 500', handle: '@diya.grid', rot: '3deg', shift: '14px', from: '#ec4899', to: '#2b1055', stop: '75%', side: 'left', video: null, poster: null }
+                ];
+
+                const section = document.querySelector('.reel-stories');
+                const row = document.getElementById('rsRow');
+                if (!section || !row) { return; }
+
+                /* Boot flag: hides the reveal targets only when JS is alive */
+                section.classList.add('rs-anim');
+
+                const PIN = '<svg class="rs-pin" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.6a2.6 2.6 0 1 1 0-5.2 2.6 2.6 0 0 1 0 5.2Z"/></svg>';
+
+                /* ---- render the cards ---- */
+                row.innerHTML = REELS.map((r, i) => {
+                    const media = r.video
+                        ? `<video class="rs-video" muted loop playsinline preload="metadata"${r.poster ? ` poster="${r.poster}"` : ''}><source src="${r.video}" type="video/mp4"></video><div class="rs-scrim"></div>`
+                        : '';
+
+                    return `<article class="rs-card" style="--i:${i};--rot:${r.rot};--shift:${r.shift};--c1:${r.from};--c2:${r.to};--c2s:${r.stop}">
+                        <div class="rs-card-inner">
+                            <div class="rs-media">${media}</div>
+                            <span class="rs-badge${r.side === 'left' ? ' rs-badge--left' : ''}">${r.badge}</span>
+                            <div class="rs-body">
+                                <span class="rs-place">${PIN}${r.city}</span>
+                                <h3 class="rs-card-title">${r.title}</h3>
+                                <div class="rs-foot">
+                                    <span class="rs-handle">${r.handle}</span>
+                                    <button class="rs-play" type="button" aria-label="Play ${r.title}">&#9654;</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </article>
-                @endforeach
-            </div>
-            <p class="reveal mt-5 font-mono text-[11px] font-bold uppercase tracking-widest text-ink/40">Swipe &rarr; for next chapter</p>
-        </section>
+                    </article>`;
+                }).join('');
+
+                /* ---- reveal on scroll ---- */
+                const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                const reveals = Array.from(section.querySelectorAll('.rs-reveal, .rs-card'));
+
+                if (reduce || !('IntersectionObserver' in window)) {
+                    reveals.forEach((el) => el.classList.add('is-in'));
+                } else {
+                    const io = new IntersectionObserver((entries) => {
+                        entries.forEach((entry) => {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('is-in');
+                                io.unobserve(entry.target);
+                            }
+                        });
+                    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+                    reveals.forEach((el) => io.observe(el));
+                }
+
+                /* ---- muted autoplay while the reel is on screen ---- */
+                const videos = Array.from(row.querySelectorAll('video'));
+                if (videos.length && 'IntersectionObserver' in window && !reduce) {
+                    const vio = new IntersectionObserver((entries) => {
+                        entries.forEach((entry) => {
+                            const video = entry.target;
+                            if (entry.isIntersecting && entry.intersectionRatio > 0.55) {
+                                video.play().catch(() => {});
+                            } else {
+                                video.pause();
+                            }
+                        });
+                    }, { threshold: [0, 0.55, 1] });
+                    videos.forEach((v) => vio.observe(v));
+                }
+
+                /* ---- play button toggles the reel ---- */
+                row.addEventListener('click', (event) => {
+                    const button = event.target.closest('.rs-play');
+                    if (!button) { return; }
+                    const card = button.closest('.rs-card');
+                    const video = card ? card.querySelector('video') : null;
+                    if (!video) { return; }
+                    if (video.paused) {
+                        video.play().catch(() => {});
+                    } else {
+                        video.pause();
+                    }
+                });
+            })();
+        </script>
+
 
         <!-- ===================== PICK-YOUR-VIBE QUIZ (GAMIFICATION) ===================== -->
         <section id="vibe" class="relative bg-lime border-y-2 border-ink overflow-hidden">
@@ -815,49 +1053,448 @@
             </div>
         </section>
 
-        <!-- ===================== FOOTER ===================== -->
-        <footer class="bg-ink text-white">
-            <div class="max-w-7xl mx-auto px-6 py-14 grid md:grid-cols-4 gap-10">
-                <div class="md:col-span-2">
-                    <a href="{{ route('home.light3') }}" class="flex items-center gap-2.5">
-                        <span class="w-10 h-10 rounded-full bg-lime text-ink flex items-center justify-center font-ransom font-extrabold">H*</span>
-                        <span class="text-lg font-extrabold tracking-tight">HypeMarket</span>
-                    </a>
-                    <p class="mt-4 max-w-sm text-sm text-white/60 leading-relaxed">
-                        The video-first creator marketplace. Cast Instagram models, reels creators and anchors with live graph analytics, comp cards and escrow-protected payouts.
-                    </p>
-                    <span class="mt-5 inline-block font-script text-xl text-lime rotate-[-2deg]">built for the feed generation &#10022;</span>
+        <!-- ===================== FOOTER (interactive paper punch) ===================== -->
+        <footer class="relative mt-24 w-full" id="site-footer">
+            <div id="tm-footer-inner" class="relative flex w-full flex-col overflow-hidden"
+                 style="background-image:url('/footer-scene.jpg');background-size:cover;background-position:center 60%;min-height:100vh;">
+
+                {{-- Paper SVG — covers FULL footer height; JS sets viewBox + punches holes --}}
+                <svg id="tm-paper-svg" class="absolute inset-0 z-10 block h-full w-full" preserveAspectRatio="none" viewBox="0 0 1440 600" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;">
+                    <defs>
+                        <filter id="tmGrain" x="0" y="0" width="100%" height="100%">
+                            <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="5"/>
+                            <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .07 0"/>
+                            <feComposite in2="SourceGraphic" operator="in"/>
+                        </filter>
+                        <mask id="tmPaperMask" maskUnits="userSpaceOnUse" x="0" y="0" width="1440" height="600">
+                            <rect id="tm-mask-bg" x="0" y="0" width="1440" height="600" fill="white"/>
+                            {{-- JS appends one <path fill="black"> per click — they accumulate --}}
+                        </mask>
+                    </defs>
+                    {{-- Green paper — top portion only; JS updates height to match content div --}}
+                    <rect id="tm-green-rect" x="0" y="0" width="1440" height="320" fill="#D6FE3F" mask="url(#tmPaperMask)"/>
+                    <rect id="tm-grain-rect" x="0" y="0" width="1440" height="320" fill="#000" mask="url(#tmPaperMask)" filter="url(#tmGrain)" opacity="0.4" style="mix-blend-mode:multiply"/>
+                </svg>
+
+                {{-- Content area — sits above the SVG --}}
+                <div id="tm-content-div" class="relative" style="min-height:55vh;">
+                    {{-- Footer Content --}}
+                    <div class="pointer-events-none relative z-20 flex flex-col justify-between gap-8 px-6 py-8 sm:px-12 sm:py-10" style="color:#12161d; min-height:55vh;">
+
+                        {{-- Top row: brand + nav columns --}}
+                        <div class="flex flex-col gap-8 md:grid md:items-start" style="grid-template-columns: 1.6fr auto auto auto; gap: 3.5rem;">
+
+                            {{-- Brand --}}
+                            <div>
+                                <span class="block font-sans font-black leading-none" style="font-size:clamp(32px,5vw,58px);letter-spacing:-0.03em;opacity:0.65;color:#12161d;">
+                                    Talent<br>Marketplace
+                                </span>
+                                <p class="mt-3 text-xs leading-relaxed max-w-xs font-mono" style="color:#12161d;opacity:0.6;">
+                                    The full-cycle talent platform connecting premium brands with verified models, influencers, anchors & UGC creators.
+                                </p>
+                            </div>
+
+                            {{-- Discover --}}
+                            <nav aria-label="Discover" class="pointer-events-auto">
+                                <h4 class="mb-3 font-mono text-[10px] font-normal uppercase tracking-[0.14em]" style="color:#12161d;opacity:0.55;">Discover</h4>
+                                <ul class="flex flex-col gap-2 font-sans text-[14px]" style="color:#12161d;">
+                                    <li><a href="{{ route('influencers.public', ['talent_type' => 'influencer']) }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Social Influencers</a></li>
+                                    <li><a href="{{ route('influencers.public', ['talent_type' => 'modeling']) }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Fashion Models</a></li>
+                                    <li><a href="{{ route('influencers.public', ['talent_type' => 'anchor']) }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Event Anchors</a></li>
+                                    <li><a href="{{ route('influencers.public', ['talent_type' => 'ugc']) }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">UGC Creators</a></li>
+                                    <li><a href="{{ route('campaigns.public') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Open Briefs</a></li>
+                                </ul>
+                            </nav>
+
+                            {{-- Platform --}}
+                            <nav aria-label="Platform" class="pointer-events-auto">
+                                <h4 class="mb-3 font-mono text-[10px] font-normal uppercase tracking-[0.14em]" style="color:#12161d;opacity:0.55;">Platform</h4>
+                                <ul class="flex flex-col gap-2 font-sans text-[14px]" style="color:#12161d;">
+                                    <li><a href="{{ route('how-it-works') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">How It Works</a></li>
+                                    <li><a href="{{ route('pricing') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Pricing & Escrow</a></li>
+                                    <li><a href="{{ route('about') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">About</a></li>
+                                    <li><a href="{{ route('contact') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Contact & Help</a></li>
+                                </ul>
+                            </nav>
+
+                            {{-- Portals + Social --}}
+                            <div class="pointer-events-auto">
+                                <h4 class="mb-3 font-mono text-[10px] font-normal uppercase tracking-[0.14em]" style="color:#12161d;opacity:0.55;">Portals</h4>
+                                <ul class="flex flex-col gap-2 font-sans text-[14px]" style="color:#12161d;">
+                                    <li><a href="{{ route('brand.login') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Brand Studio</a></li>
+                                    <li><a href="{{ route('login') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Creator Studio</a></li>
+                                    <li><a href="{{ route('admin.login') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Admin Gateway</a></li>
+                                    <li><a href="{{ route('register') }}" class="pointer-events-auto font-bold transition-opacity hover:opacity-60" style="color:#12161d;">+ Create Account ↗</a></li>
+                                </ul>
+                                <div class="mt-5">
+                                    <h4 class="mb-3 font-mono text-[10px] font-normal uppercase tracking-[0.14em]" style="color:#12161d;opacity:0.55;">Legal</h4>
+                                    <ul class="flex flex-col gap-2 font-sans text-[14px]" style="color:#12161d;">
+                                        <li><a href="{{ route('privacy') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Privacy Policy</a></li>
+                                        <li><a href="{{ route('terms') }}" class="pointer-events-auto transition-opacity hover:opacity-60" style="color:#12161d;">Terms of Service</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        {{-- Bottom bar --}}
+                        <div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.1em]" style="color:#12161d;opacity:0.55;">
+                            <span>&copy; {{ date('Y') }} Talent Marketplace · Built with precision &amp; passion</span>
+                            <span class="flex items-center gap-[10px] whitespace-nowrap">
+                                <span id="tm-footer-pulse" class="inline-block h-1.5 w-1.5 rounded-full" style="background:#12161d;animation:tmPulse 1.6s ease-in-out infinite;"></span>
+                                click to punch &nbsp;·&nbsp; ← → to cycle shapes
+                            </span>
+                        </div>
+
+                    </div>
                 </div>
-                <div>
-                    <h4 class="font-mono text-[11px] font-bold uppercase tracking-widest text-white/40">Marketplace</h4>
-                    <ul class="mt-4 space-y-3 text-sm font-semibold text-white/75">
-                        <li><a href="{{ route('influencers.public') }}" class="hover:text-lime transition">Creators</a></li>
-                        <li><a href="{{ route('campaigns.public') }}" class="hover:text-lime transition">Campaigns</a></li>
-                        <li><a href="{{ route('how-it-works') }}" class="hover:text-lime transition">How it works</a></li>
-                        <li><a href="{{ route('pricing') }}" class="hover:text-lime transition">Pricing</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-mono text-[11px] font-bold uppercase tracking-widest text-white/40">Policies</h4>
-                    <ul class="mt-4 space-y-3 text-sm font-semibold text-white/75">
-                        <li><a href="{{ route('terms') }}" class="hover:text-lime transition">Terms of service</a></li>
-                        <li><a href="{{ route('privacy') }}" class="hover:text-lime transition">Privacy policy</a></li>
-                        <li><a href="{{ route('data-deletion') }}" class="hover:text-lime transition">Data deletion</a></li>
-                        <li><a href="{{ route('contact') }}" class="hover:text-lime transition">Contact</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="border-t border-white/10">
-                <div class="max-w-7xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-white/40">
-                    <span>&copy; {{ date('Y') }} HypeMarket. Verified reach only, always.</span>
-                    <span class="flex items-center gap-4">
-                        <a href="#" aria-label="Instagram" class="hover:text-lime transition"><i class="fa-brands fa-instagram"></i></a>
-                        <a href="#" aria-label="X" class="hover:text-lime transition"><i class="fa-brands fa-x-twitter"></i></a>
-                        <a href="#" aria-label="LinkedIn" class="hover:text-lime transition"><i class="fa-brands fa-linkedin-in"></i></a>
-                    </span>
-                </div>
+
+                {{-- Lower scenic area (Layer 2) --}}
+                <div id="tm-scenic-area" style="min-height:45vh;flex:1;display:block;"></div>
+
+                {{-- Falling / Draggable punched shapes layer --}}
+                <div class="pointer-events-none absolute inset-0 z-30" id="tm-footer-shape-layer" style="overflow:hidden;"></div>
+
+                {{-- New sheet / reset button --}}
+                <button id="tm-new-sheet-btn"
+                        class="absolute z-40 inline-flex items-center gap-2 rounded-full font-mono text-[10px] uppercase tracking-[0.12em] text-white opacity-90 hover:opacity-100 transition-opacity"
+                        style="right:18px;bottom:18px;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);border:0;padding:9px 16px 9px 12px;cursor:pointer;">
+                    <svg width="11" height="11" viewBox="0 0 11 11">
+                        <path d="M1 5.5 A 4.5 4.5 0 1 1 5.5 10" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+                        <path d="M1 1 V 5.5 H 5.5" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    new sheet
+                </button>
+
             </div>
         </footer>
+
+        <script>
+        (function () {
+            'use strict';
+
+            /* ── Shape library ────────────────────────────── */
+            var SHAPES = [
+                /* flower  */ 'M 0 -42 C 22 -52 42 -32 32 -10 C 50 -2 50 26 26 30 C 30 50 4 56 -4 38 C -22 52 -42 32 -32 14 C -52 8 -48 -22 -26 -22 C -22 -42 -10 -50 0 -42 Z',
+                /* star    */ 'M 0 -44 L 10 -15 L 40 -15 L 16 5 L 26 34 L 0 18 L -26 34 L -16 5 L -40 -15 L -10 -15 Z',
+                /* heart   */ 'M 0 38 C -4 34 -40 14 -40 -10 C -40 -28 -26 -40 0 -20 C 26 -40 40 -28 40 -10 C 40 14 4 34 0 38 Z',
+                /* blob    */ 'M 38 -8 C 44 12 28 42 4 44 C -20 46 -44 28 -42 4 C -40 -20 -18 -44 8 -42 C 34 -40 32 -28 38 -8 Z',
+                /* diamond */ 'M 0 -44 L 30 0 L 0 44 L -30 0 Z',
+            ];
+
+            var SHAPE_HALF = 44;
+            var HOLE_RADIUS = 50;
+
+            var shapeIdx = 0;
+
+            /* DOM refs */
+            var footerEl, paperSvgEl, maskEl, contentDivEl, greenRectEl, grainRectEl, maskBgEl;
+            var shapeLayerEl;
+            var cursorEl, cursorPathEl;
+            var btnEl;
+
+            /* ViewBox dimensions — set dynamically in init() */
+            var VB_W = 1440, VB_H = 600;
+
+            /* ── Helpers ──────────────────────────────────── */
+            function mod(n, m) { return ((n % m) + m) % m; }
+
+            function clientToSvgCoords(cx, cy) {
+                var rect = paperSvgEl.getBoundingClientRect();
+                return {
+                    x: ((cx - rect.left) / rect.width)  * VB_W,
+                    y: ((cy - rect.top)  / rect.height) * VB_H
+                };
+            }
+
+            /* ── Create a falling / draggable cutout piece ──── */
+            function spawnFallingPiece(clientX, clientY, currentPath, rotAngle) {
+                if (!shapeLayerEl) return;
+                var layerRect = shapeLayerEl.getBoundingClientRect();
+                var startX = clientX - layerRect.left;
+                var startY = clientY - layerRect.top;
+
+                // Target landing zone in the lower scenic area (Layer 2)
+                var layerHeight = layerRect.height;
+                var cRect = contentDivEl ? contentDivEl.getBoundingClientRect() : null;
+                var contentBottom = cRect ? (cRect.bottom - layerRect.top) : (layerHeight * 0.55);
+                var landingMinY = contentBottom + 25;
+                var landingMaxY = layerHeight - 75;
+                if (landingMaxY <= landingMinY) {
+                    landingMaxY = layerHeight - 40;
+                    landingMinY = Math.max(contentBottom + 10, layerHeight - 80);
+                }
+
+                // Target Y with random variation and slight horizontal drift
+                var targetY = landingMinY + Math.random() * (landingMaxY - landingMinY);
+                var driftX = (Math.random() - 0.5) * 80;
+                var targetX = Math.max(30, Math.min(layerRect.width - 70, startX + driftX));
+                var targetRot = parseFloat(rotAngle) + (Math.random() * 90 - 45);
+
+                var svgNs = 'http://www.w3.org/2000/svg';
+                var pieceSvg = document.createElementNS(svgNs, 'svg');
+                pieceSvg.setAttribute('width', '84');
+                pieceSvg.setAttribute('height', '84');
+                pieceSvg.setAttribute('viewBox', '-42 -42 84 84');
+                pieceSvg.style.position = 'absolute';
+                pieceSvg.style.left = '0';
+                pieceSvg.style.top = '0';
+                pieceSvg.style.pointerEvents = 'auto';
+                pieceSvg.style.cursor = 'grab';
+                pieceSvg.style.touchAction = 'none';
+                pieceSvg.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.22))';
+                pieceSvg.style.willChange = 'transform';
+                pieceSvg.style.transform = 'translate(' + (startX - 42) + 'px,' + (startY - 42) + 'px) rotate(' + rotAngle + 'deg)';
+
+                var p = document.createElementNS(svgNs, 'path');
+                p.setAttribute('d', currentPath);
+                p.setAttribute('fill', '#D6FE3F');
+                p.setAttribute('stroke', 'rgba(18,22,29,0.08)');
+                p.setAttribute('stroke-width', '1');
+                pieceSvg.appendChild(p);
+
+                shapeLayerEl.appendChild(pieceSvg);
+
+                // Animate fall using smooth gravity curve
+                var endPosX = targetX - 42;
+                var endPosY = targetY - 42;
+                var currentRot = parseFloat(rotAngle) || 0;
+
+                var fallDuration = 850 + Math.random() * 250; // ms
+
+                // Store current position for dragging
+                var state = {
+                    x: startX - 42,
+                    y: startY - 42,
+                    rot: currentRot,
+                    isDragging: false,
+                    isFalling: true,
+                    startX: 0,
+                    startY: 0,
+                    initialX: 0,
+                    initialY: 0
+                };
+
+                // Start drop animation
+                requestAnimationFrame(function () {
+                    pieceSvg.style.transition = 'transform ' + (fallDuration / 1000) + 's cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.25s';
+                    pieceSvg.style.transform = 'translate(' + endPosX + 'px,' + endPosY + 'px) rotate(' + targetRot + 'deg)';
+                });
+
+                var fallTimer = setTimeout(function () {
+                    state.isFalling = false;
+                    state.x = endPosX;
+                    state.y = endPosY;
+                    state.rot = targetRot;
+                    pieceSvg.style.transition = 'filter 0.2s';
+                }, fallDuration);
+
+                // Make the piece draggable
+                function onDragStart(e) {
+                    if (state.isFalling) {
+                        clearTimeout(fallTimer);
+                        state.isFalling = false;
+                        var style = window.getComputedStyle(pieceSvg);
+                        var matrix = style.transform;
+                        if (matrix && matrix !== 'none') {
+                            var values = matrix.split('(')[1].split(')')[0].split(',');
+                            var a = parseFloat(values[0]);
+                            var b = parseFloat(values[1]);
+                            var tx = parseFloat(values[4]);
+                            var ty = parseFloat(values[5]);
+                            state.x = isNaN(tx) ? endPosX : tx;
+                            state.y = isNaN(ty) ? endPosY : ty;
+                            state.rot = isNaN(a) ? targetRot : Math.round(Math.atan2(b, a) * (180 / Math.PI));
+                        }
+                    }
+                    state.isDragging = true;
+                    pieceSvg.style.transition = 'none';
+                    pieceSvg.style.cursor = 'grabbing';
+                    pieceSvg.style.filter = 'drop-shadow(0 12px 24px rgba(0,0,0,0.38))';
+                    var pt = e.touches ? e.touches[0] : e;
+                    state.startX = pt.clientX;
+                    state.startY = pt.clientY;
+                    state.initialX = state.x;
+                    state.initialY = state.y;
+
+                    function onDragMove(moveEvt) {
+                        if (!state.isDragging) return;
+                        var mPt = moveEvt.touches ? moveEvt.touches[0] : moveEvt;
+                        var dx = mPt.clientX - state.startX;
+                        var dy = mPt.clientY - state.startY;
+                        state.x = state.initialX + dx;
+                        state.y = state.initialY + dy;
+                        state.rot += (dx * 0.08);
+                        pieceSvg.style.transform = 'translate(' + state.x + 'px,' + state.y + 'px) rotate(' + state.rot + 'deg)';
+                        moveEvt.preventDefault();
+                    }
+
+                    function onDragEnd() {
+                        state.isDragging = false;
+                        pieceSvg.style.cursor = 'grab';
+                        pieceSvg.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.22))';
+                        document.removeEventListener('mousemove', onDragMove);
+                        document.removeEventListener('mouseup', onDragEnd);
+                        document.removeEventListener('touchmove', onDragMove);
+                        document.removeEventListener('touchend', onDragEnd);
+                    }
+
+                    document.addEventListener('mousemove', onDragMove);
+                    document.addEventListener('mouseup', onDragEnd);
+                    document.addEventListener('touchmove', onDragMove, { passive: false });
+                    document.addEventListener('touchend', onDragEnd);
+
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+
+                pieceSvg.addEventListener('mousedown', onDragStart);
+                pieceSvg.addEventListener('touchstart', onDragStart, { passive: false });
+            }
+
+            /* ── Punch hole — ACCUMULATES, never replaces ──── */
+            function punchAt(cx, cy) {
+                if (!maskEl) { return; }
+                var pt = clientToSvgCoords(cx, cy);
+                var scale = HOLE_RADIUS / SHAPE_HALF;
+                var rot = (Math.random() * 60 - 30).toFixed(1);
+
+                // 1. Cut hole in the green paper mask
+                var hole = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                hole.setAttribute('fill', 'black');
+                hole.setAttribute('d', SHAPES[shapeIdx]);
+                hole.setAttribute('transform',
+                    'translate(' + pt.x.toFixed(1) + ' ' + pt.y.toFixed(1) + ')'
+                    + ' rotate(' + rot + ')'
+                    + ' scale(' + scale.toFixed(3) + ')');
+                maskEl.appendChild(hole);
+
+                // 2. Spawn the cut piece and drop it down to the scenic bottom area
+                spawnFallingPiece(cx, cy, SHAPES[shapeIdx], rot);
+            }
+
+            /* ── Shape change ── */
+            function applyShape() {
+                var d = SHAPES[shapeIdx];
+                if (cursorPathEl) { cursorPathEl.setAttribute('d', d); }
+            }
+
+            /* ── Custom cursor ────────────────────────────── */
+            function moveCursor(cx, cy) {
+                if (!cursorEl) { return; }
+                cursorEl.style.transform = 'translate(' + (cx - 40) + 'px,' + (cy - 40) + 'px)';
+            }
+
+            /* ── Cycle shapes ─────────────────────────────── */
+            function cycleShape(delta) {
+                shapeIdx = mod(shapeIdx + delta, SHAPES.length);
+                applyShape();
+            }
+
+            /* ── Reset sheet ──────────────────────────────── */
+            function resetSheet() {
+                if (maskEl) {
+                    var holes = maskEl.querySelectorAll('path');
+                    holes.forEach(function (h) { h.remove(); });
+                }
+                if (shapeLayerEl) {
+                    shapeLayerEl.innerHTML = '';
+                }
+            }
+
+            /* ── Init ─────────────────────────────────────── */
+            function init() {
+                footerEl     = document.getElementById('site-footer');
+                paperSvgEl   = document.getElementById('tm-paper-svg');
+                maskEl       = document.getElementById('tmPaperMask');
+                maskBgEl     = document.getElementById('tm-mask-bg');
+                greenRectEl  = document.getElementById('tm-green-rect');
+                grainRectEl  = document.getElementById('tm-grain-rect');
+                contentDivEl = document.getElementById('tm-content-div');
+                shapeLayerEl = document.getElementById('tm-footer-shape-layer');
+                cursorEl     = document.getElementById('tm-cursor');
+                cursorPathEl = document.getElementById('tm-cursor-path');
+                btnEl        = document.getElementById('tm-new-sheet-btn');
+
+                if (!footerEl || !paperSvgEl || !maskEl) { return; }
+
+                function updateDimensions() {
+                    var innerEl = document.getElementById('tm-footer-inner');
+                    if (!innerEl || !paperSvgEl || !maskEl) { return; }
+                    VB_H = Math.round(innerEl.getBoundingClientRect().height) || 600;
+                    paperSvgEl.setAttribute('viewBox', '0 0 ' + VB_W + ' ' + VB_H);
+                    if (maskBgEl) {
+                        maskBgEl.setAttribute('height', VB_H);
+                        maskBgEl.setAttribute('width', VB_W);
+                    }
+                    maskEl.setAttribute('height', VB_H);
+                    maskEl.setAttribute('width', VB_W);
+
+                    if (contentDivEl) {
+                        var pxH = contentDivEl.getBoundingClientRect().height;
+                        var vbH = Math.round((pxH / innerEl.getBoundingClientRect().height) * VB_H);
+                        if (greenRectEl) { greenRectEl.setAttribute('height', vbH); }
+                        if (grainRectEl) { grainRectEl.setAttribute('height', vbH); }
+                    }
+                }
+
+                updateDimensions();
+                window.addEventListener('resize', updateDimensions);
+                window.addEventListener('load', updateDimensions);
+
+                /* ── Paper zone: full green paper section (content div), NOT the scenic photo below ── */
+                function isInPaperZone(clientY) {
+                    if (!contentDivEl) { return true; }
+                    var r = contentDivEl.getBoundingClientRect();
+                    return clientY >= r.top && clientY <= r.bottom;
+                }
+
+                /* ── Footer mouse events (use document-level to bypass ScrollSmoother) ── */
+                document.addEventListener('mousemove', function (e) {
+                    if (!footerEl || !cursorEl) { return; }
+                    var fRect = footerEl.getBoundingClientRect();
+                    var inFooter = e.clientX >= fRect.left && e.clientX <= fRect.right &&
+                                   e.clientY >= fRect.top  && e.clientY <= fRect.bottom;
+                    if (inFooter && isInPaperZone(e.clientY)) {
+                        moveCursor(e.clientX, e.clientY);
+                        cursorEl.style.display = 'block';
+                    } else {
+                        cursorEl.style.display = 'none';
+                    }
+                });
+
+                /* Click punches a hole only in the green paper zone */
+                footerEl.addEventListener('click', function (e) {
+                    if (!isInPaperZone(e.clientY)) { return; }
+                    if (e.target.closest('a') || e.target.closest('button')) { return; }
+                    if (e.target.closest('svg') && e.target.closest('svg').parentNode === shapeLayerEl) { return; }
+                    punchAt(e.clientX, e.clientY);
+                });
+
+                /* New sheet button */
+                if (btnEl) {
+                    btnEl.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        resetSheet();
+                    });
+                }
+
+                /* Arrow key cycling */
+                document.addEventListener('keydown', function (e) {
+                    var t = e.target;
+                    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) { return; }
+                    if (e.key === 'ArrowRight') { cycleShape(1); }
+                    if (e.key === 'ArrowLeft')  { cycleShape(-1); }
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        }());
+        </script>
     </main>
         </div>
     </div>
@@ -901,6 +1538,18 @@
             <a href="#estimate" class="navLink flex items-baseline gap-4 border-b-2 border-[var(--hm-line)] py-3 font-display text-4xl font-extrabold text-[var(--hm-ink)] sm:text-6xl"><span class="font-mono text-xs text-[var(--hm-blue)]">04</span>Get Paid</a>
             <a href="{{ route('register') }}" class="navLink hm-btn mt-8 self-start rounded-full bg-[var(--hm-lime)] px-8 py-4 text-sm font-extrabold text-[var(--hm-line)]">Start free</a>
         </div>
+    </div>
+
+    {{-- Custom cursor: shape outline, follows mouse, only visible inside footer (kept outside #smooth-content so it is fixed) --}}
+    <div id="tm-cursor" aria-hidden="true" style="position:fixed;top:0;left:0;pointer-events:none;z-index:99999;display:none;will-change:transform;">
+        <svg width="80" height="80" viewBox="-40 -40 80 80" style="display:block;overflow:visible;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.35));">
+            <path id="tm-cursor-path"
+                  d="M 0 -42 C 22 -52 42 -32 32 -10 C 50 -2 50 26 26 30 C 30 50 4 56 -4 38 C -22 52 -42 32 -32 14 C -52 8 -48 -22 -26 -22 C -22 -42 -10 -50 0 -42 Z"
+                  fill="rgba(255,255,255,0.55)"
+                  stroke="#12161d"
+                  stroke-width="2.5"
+                  style="transform:scale(0.85);"/>
+        </svg>
     </div>
 
     <!-- ===================== MOTION CHOREOGRAPHY (GSAP + SCROLLTRIGGER + SCROLLSMOOTHER + MICRO-INTERACTIONS) ===================== -->
@@ -1031,29 +1680,6 @@
                     navOverlay.classList.add('hidden');
                     if (hasGsap) { gsap.to(n1, { rotate: 0, y: 0, duration: 0.3 }); gsap.to(n2, { rotate: 0, y: 0, duration: 0.3 }); }
                 }));
-            }
-
-            /* ---------- Reel rail: play in view + progress ---------- */
-            const reelCards = document.querySelectorAll('.reel-card');
-            if (reelCards.length) {
-                if ('IntersectionObserver' in window && !prefersReduced) {
-                    const io = new IntersectionObserver((entries) => {
-                        entries.forEach((en) => {
-                            const card = en.target;
-                            const video = card.querySelector('video');
-                            if (en.isIntersecting && en.intersectionRatio > 0.55) {
-                                card.classList.add('playing');
-                                if (video) { video.play().catch(() => {}); }
-                            } else {
-                                card.classList.remove('playing');
-                                if (video) { video.pause(); }
-                            }
-                        });
-                    }, { threshold: [0, 0.55, 1] });
-                    reelCards.forEach((c) => io.observe(c));
-                } else {
-                    reelCards.forEach((c) => c.classList.add('playing'));
-                }
             }
 
             /* ---------- Vibe quiz (gamified) ---------- */
@@ -1284,14 +1910,6 @@
                 gsap.from(el, {
                     scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' },
                     y: 42, opacity: 0, duration: 0.9, ease: 'power3.out',
-                });
-            });
-
-            // Reel cards entrance
-            gsap.utils.toArray('.reel-card').forEach((card, i) => {
-                gsap.from(card, {
-                    scrollTrigger: { trigger: card.parentElement, start: 'top 82%', toggleActions: 'play none none none' },
-                    y: 60, opacity: 0, duration: 0.8, delay: (i % 4) * 0.06, ease: 'power3.out',
                 });
             });
 
