@@ -231,16 +231,20 @@
         }
         .rs-card:hover .rs-card-inner { transform: rotate(0deg) scale(1.06) translateY(-8px); }
 
-        /* Video / thumbnail layer (gradient shows when there is no video) */
+        /* Reel layer: poster frame -> video -> scrim. The poster keeps the card
+           attractive while the clip buffers and stays put if the clip fails. */
         .rs-media { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; }
-        .rs-video { display: block; width: 100%; height: 100%; object-fit: cover; }
-        .rs-scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.62), rgba(0,0,0,.06) 55%, rgba(0,0,0,.28)); }
+        .rs-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+        .rs-video { position: relative; z-index: 1; display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .45s ease; }
+        .rs-video.is-loaded { opacity: 1; }
+        .rs-scrim { position: absolute; inset: 0; z-index: 2; background: linear-gradient(to top, rgba(0,0,0,.62), rgba(0,0,0,.06) 55%, rgba(0,0,0,.28)); }
 
         /* Sticker badge */
         .rs-badge {
             position: absolute;
             top: -14px;
             right: -12px;
+            z-index: 5;
             padding: 6px 12px;
             background: var(--lime);
             color: var(--navy);
@@ -256,7 +260,7 @@
         .rs-badge--left { left: -12px; right: auto; background: var(--pink); transform: rotate(-8deg); }
 
         /* Card body */
-        .rs-body { position: relative; z-index: 2; }
+        .rs-body { position: relative; z-index: 3; }
         .rs-place {
             display: inline-flex;
             align-items: center;
@@ -293,6 +297,53 @@
             transition: transform .25s cubic-bezier(.3, 1.6, .5, 1);
         }
         .rs-play:hover { transform: scale(1.08) rotate(-6deg); }
+        .rs-play .fa-pause { display: none; }
+        .rs-play.is-playing .fa-play { display: none; }
+        .rs-play.is-playing .fa-pause { display: inline-block; }
+
+        /* Sound toggle — muted by default, one click to hear the reel */
+        .rs-mute {
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, .18);
+            border: 1px solid rgba(255, 255, 255, .35);
+            border-radius: 50%;
+            color: #fff;
+            font-size: 11px;
+            line-height: 1;
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            transition: transform .25s cubic-bezier(.3, 1.6, .5, 1), background-color .25s, color .25s;
+        }
+        .rs-mute:hover { transform: scale(1.08); background: rgba(255, 255, 255, .3); }
+        .rs-mute.is-on { background: var(--lime); border-color: var(--navy); color: var(--navy); }
+
+        /* Story-style watch progress */
+        .rs-progress {
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            bottom: 10px;
+            height: 3px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .3);
+            overflow: hidden;
+            z-index: 4;
+            opacity: 0;
+            transition: opacity .35s ease;
+        }
+        .rs-progress.is-live { opacity: 1; }
+        .rs-progress span {
+            display: block;
+            width: 0;
+            height: 100%;
+            border-radius: inherit;
+            background: var(--lime);
+        }
 
         /* Scroll reveal (vanilla JS adds .is-in) */
         .rs-reveal { transition: opacity .7s ease, transform .7s cubic-bezier(.22, 1, .36, 1); }
@@ -597,17 +648,59 @@
 
         <script>
             /* =============================================================
-               REEL STORIES — card data + renderer
-               Framework-free. Drop an mp4 URL into `video` (and an
-               optional `poster`) and the gradient is swapped for the
-               real reel.
+               REEL STORIES — reel library, card data + renderer
+               Framework-free. Every card draws a random clip from its own
+               theme pool on each page load, so the rail never repeats
+               itself and no two cards show the same reel.
                ============================================================= */
             (() => {
+                const CD = 'https://cdn.coverr.co/videos';
+                const clip = (id) => ({
+                    src: `${CD}/${id}/720p.mp4`,
+                    poster: `${CD}/${id}/thumbnail?width=560`
+                });
+
+                const REEL_LIBRARY = {
+                    fashion: [
+                        clip('coverr-temp-gen-3-alpha-turbo-4010599000-parisianstreetfash-m-5-mp4-4750'),
+                        clip('user-ai-generation-4u6KTwZOVa3Y'),
+                        clip('user-ai-generation-PcuCvB12ZMyg'),
+                        clip('user-ai-generation-KTMRBOIVNjoz'),
+                        clip('user-ai-generation-d3XAUBVDSgYB'),
+                        clip('coverr-girl-posing-on-the-edge-of-a-terrace-9533'),
+                        clip('coverr-woman-staring-into-the-camera-4258')
+                    ],
+                    beauty: [
+                        clip('coverr-temp-professionalmode9x16macrotowidetransitionshot6-mp4-5960'),
+                        clip('user-ai-generation-YbPk2NsnjntP'),
+                        clip('coverr-a-makeup-artist-applying-makeup-1127'),
+                        clip('coverr-makeup-artist-applies-red-lipstick-8795'),
+                        clip('coverr-cosmic-blue-glitter-makeup-close-up'),
+                        clip('coverr-woman-taking-a-selfie-with-makeup-on-7110')
+                    ],
+                    tech: [
+                        clip('user-ai-generation-IsDQn0PEUQeR'),
+                        clip('user-ai-generation-9sF70EOySV2P'),
+                        clip('user-ai-generation-EUlJuQpDXVVj'),
+                        clip('coverr-cloaked-figure-standing-next-to-a-futuristic-car'),
+                        clip('coverr-man-in-front-of-a-neon-sign-7353'),
+                        clip('coverr-people-trying-vr-for-the-first-time-5800')
+                    ],
+                    host: [
+                        clip('coverr-having-fun-at-a-concert-3590'),
+                        clip('coverr-temp-yrevgrainy1977disco202505231653-mp4-2416'),
+                        clip('coverr-temp-iwx4grainy1977disco202505231653-1-mp4-1736'),
+                        clip('coverr-live-music-concert-5249'),
+                        clip('coverr-confetti-and-party-poppers-6906'),
+                        clip('coverr-friends-raising-a-toast-7037')
+                    ]
+                };
+
                 const REELS = [
-                    { badge: '🔥 12.4K', city: 'MUMBAI', title: 'Runway to reels in 48h', handle: '@ananya.model', rot: '-3deg', shift: '0px', from: '#2f6b3a', to: '#142a1a', stop: '70%', side: 'right', video: null, poster: null },
-                    { badge: '👀 8.1K', city: 'DELHI', title: 'The 8.8% ER truth', handle: '@zoya.moves', rot: '2deg', shift: '18px', from: '#c2410c', to: '#3b0d3b', stop: '75%', side: 'left', video: null, poster: null },
-                    { badge: '🎮 21K', city: 'BENGALURU', title: 'Gaming drops, zero flops', handle: '@arjun.reels', rot: '-2deg', shift: '0px', from: '#3b82f6', to: '#1a1830', stop: '75%', side: 'right', video: null, poster: null },
-                    { badge: '🎤 5.6K', city: 'PUNE', title: 'Hosting a room of 500', handle: '@diya.grid', rot: '3deg', shift: '14px', from: '#ec4899', to: '#2b1055', stop: '75%', side: 'left', video: null, poster: null }
+                    { badge: '🔥 12.4K', city: 'MUMBAI',    title: 'Runway to reels in 48h', handle: '@ananya.model', rot: '-3deg', shift: '0px',  from: '#2f6b3a', to: '#142a1a', stop: '70%', side: 'right', themes: ['fashion'] },
+                    { badge: '👀 8.1K',  city: 'DELHI',     title: 'The 8.8% ER truth',     handle: '@zoya.moves',   rot: '2deg',  shift: '18px', from: '#c2410c', to: '#3b0d3b', stop: '75%', side: 'left',  themes: ['beauty'] },
+                    { badge: '🎮 21K',   city: 'BENGALURU', title: 'Gaming drops, zero flops', handle: '@arjun.reels', rot: '-2deg', shift: '0px',  from: '#3b82f6', to: '#1a1830', stop: '75%', side: 'right', themes: ['tech'] },
+                    { badge: '🎤 5.6K',  city: 'PUNE',      title: 'Hosting a room of 500', handle: '@diya.grid',    rot: '3deg',  shift: '14px', from: '#ec4899', to: '#2b1055', stop: '75%', side: 'left',  themes: ['host'] }
                 ];
 
                 const section = document.querySelector('.reel-stories');
@@ -619,11 +712,27 @@
 
                 const PIN = '<svg class="rs-pin" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.6a2.6 2.6 0 1 1 0-5.2 2.6 2.6 0 0 1 0 5.2Z"/></svg>';
 
+                /* ---- build a shuffled deck so every card gets a fresh reel ---- */
+                const deck = [];
+                Object.keys(REEL_LIBRARY).forEach((theme) => {
+                    REEL_LIBRARY[theme].forEach((item) => deck.push({ theme: theme, src: item.src, poster: item.poster }));
+                });
+                for (let i = deck.length - 1; i > 0; i -= 1) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    const swap = deck[i];
+                    deck[i] = deck[j];
+                    deck[j] = swap;
+                }
+                const drawClip = (themes) => {
+                    const index = deck.findIndex((item) => themes.indexOf(item.theme) !== -1);
+                    if (index === -1) { return deck.shift(); }
+                    return deck.splice(index, 1)[0];
+                };
+
                 /* ---- render the cards ---- */
                 row.innerHTML = REELS.map((r, i) => {
-                    const media = r.video
-                        ? `<video class="rs-video" muted loop playsinline preload="metadata"${r.poster ? ` poster="${r.poster}"` : ''}><source src="${r.video}" type="video/mp4"></video><div class="rs-scrim"></div>`
-                        : '';
+                    const reel = drawClip(r.themes);
+                    const media = `<img class="rs-poster" src="${reel.poster}" alt="" loading="lazy" decoding="async"><video class="rs-video" muted loop playsinline preload="metadata" aria-label="${r.title}"><source src="${reel.src}" type="video/mp4"></video><div class="rs-scrim"></div>`;
 
                     return `<article class="rs-card" style="--i:${i};--rot:${r.rot};--shift:${r.shift};--c1:${r.from};--c2:${r.to};--c2s:${r.stop}">
                         <div class="rs-card-inner">
@@ -634,9 +743,11 @@
                                 <h3 class="rs-card-title">${r.title}</h3>
                                 <div class="rs-foot">
                                     <span class="rs-handle">${r.handle}</span>
-                                    <button class="rs-play" type="button" aria-label="Play ${r.title}">&#9654;</button>
+                                    <button class="rs-mute" type="button" aria-label="Toggle sound"><i class="fa-solid fa-volume-x"></i></button>
+                                    <button class="rs-play" type="button" aria-label="Play ${r.title}"><i class="fa-solid fa-play"></i></button>
                                 </div>
                             </div>
+                            <div class="rs-progress" aria-hidden="true"><span></span></div>
                         </div>
                     </article>`;
                 }).join('');
@@ -659,6 +770,55 @@
                     reveals.forEach((el) => io.observe(el));
                 }
 
+                /* ---- reel plumbing: load state, progress, sound ---- */
+                row.querySelectorAll('.rs-card').forEach((card) => {
+                    const video = card.querySelector('video');
+                    const source = video ? video.querySelector('source') : null;
+                    const playButton = card.querySelector('.rs-play');
+                    const muteButton = card.querySelector('.rs-mute');
+                    const progress = card.querySelector('.rs-progress');
+                    const bar = progress ? progress.querySelector('span') : null;
+                    if (!video) { return; }
+
+                    const setPlaying = (playing) => {
+                        if (playButton) { playButton.classList.toggle('is-playing', playing); }
+                        if (progress) { progress.classList.toggle('is-live', playing); }
+                    };
+
+                    const setSound = () => {
+                        if (!muteButton) { return; }
+                        const on = !video.muted;
+                        muteButton.classList.toggle('is-on', on);
+                        muteButton.innerHTML = `<i class="fa-solid fa-volume-${on ? 'high' : 'x'}"></i>`;
+                    };
+
+                    video.addEventListener('loadeddata', () => video.classList.add('is-loaded'));
+                    video.addEventListener('play', () => setPlaying(true));
+                    video.addEventListener('pause', () => setPlaying(false));
+                    video.addEventListener('timeupdate', () => {
+                        if (bar && video.duration) {
+                            bar.style.width = `${Math.min(100, (video.currentTime / video.duration) * 100)}%`;
+                        }
+                    });
+
+                    /* A dead clip keeps its poster frame instead of a black box */
+                    const fail = () => {
+                        video.classList.remove('is-loaded');
+                        video.style.display = 'none';
+                        setPlaying(false);
+                    };
+                    video.addEventListener('error', fail);
+                    if (source) { source.addEventListener('error', fail); }
+
+                    if (muteButton) {
+                        muteButton.addEventListener('click', () => {
+                            video.muted = !video.muted;
+                            setSound();
+                            if (video.paused) { video.play().catch(() => {}); }
+                        });
+                    }
+                });
+
                 /* ---- muted autoplay while the reel is on screen ---- */
                 const videos = Array.from(row.querySelectorAll('video'));
                 if (videos.length && 'IntersectionObserver' in window && !reduce) {
@@ -675,7 +835,7 @@
                     videos.forEach((v) => vio.observe(v));
                 }
 
-                /* ---- play button toggles the reel ---- */
+                /* ---- play button toggles the reel (and wakes the sound up) ---- */
                 row.addEventListener('click', (event) => {
                     const button = event.target.closest('.rs-play');
                     if (!button) { return; }
@@ -683,6 +843,12 @@
                     const video = card ? card.querySelector('video') : null;
                     if (!video) { return; }
                     if (video.paused) {
+                        video.muted = false;
+                        const muteButton = card.querySelector('.rs-mute');
+                        if (muteButton) {
+                            muteButton.classList.add('is-on');
+                            muteButton.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+                        }
                         video.play().catch(() => {});
                     } else {
                         video.pause();
