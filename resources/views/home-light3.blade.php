@@ -2121,13 +2121,12 @@
                 const auto = window.setInterval(() => { if (!paused && !prefersReduced) { go(idx + 1); } }, 5000);
                 const nextBtn = document.getElementById('tNext');
                 const prevBtn = document.getElementById('tPrev');
-                if (tNext) { tNext.addEventListener('click', () => { go(ixx(1)); sfx.blip(); }); }
-                if (tPrev) { tPrev.addEventListener('click', () => { go(idx - 1); sfx.blip(); }); }
-                const c = document.getElementById('tCarousel');
-                if (c) {
-                    c.addEventListener('mouseenter', () => { /* pause */ });
+                if (nextBtn) { nextBtn.addEventListener('click', () => { go(idx + 1); sfx.blip(); }); }
+                if (prevBtn) { prevBtn.addEventListener('click', () => { go(idx - 1); sfx.blip(); }); }
+                if (tCarousel) {
+                    tCarousel.addEventListener('mouseenter', () => { paused = true; });
+                    tCarousel.addEventListener('mouseleave', () => { paused = false; });
                 }
-                function ixNext(n) { return null; }
             }
 
             /* ---------- SplitText headline reveals ---------- */
