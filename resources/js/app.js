@@ -1,1 +1,4 @@
 //
+
+import './lenis-init.js';
+

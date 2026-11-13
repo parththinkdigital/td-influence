@@ -1,14 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="antialiased selection:bg-[#E2F163] selection:text-[#181528]">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Talent Marketplace — Connect Brands with Models, Influencers, Anchors & UGC Creators')</title>
+    <title>@yield('title', 'HypeMarket — Curated Instagram Talent for Models, Influencers & Anchors')</title>
     
-    <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+    <!-- Google Fonts: Bricolage Grotesque, Plus Jakarta Sans, Space Grotesk, Caveat, Reenie Beanie -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800;12..96,900&family=Caveat:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Reenie+Beanie&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Raleway:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,10 +19,60 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        display: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+                        sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+                        display: ['"Bricolage Grotesque"', '"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"Space Grotesk"', 'monospace'],
+                        script: ['Caveat', 'cursive'],
+                        reenie: ['"Reenie Beanie"', 'cursive'],
                     },
                     colors: {
+                        canvas: {
+                            DEFAULT: '#FAF5EC',
+                            soft: '#F4ECE0',
+                            card: '#FFFFFF',
+                            subtle: '#F6EFE3',
+                        },
+                        ink: {
+                            DEFAULT: '#181528',
+                            muted: '#524B66',
+                            subtle: '#827B96',
+                        },
+                        solar: {
+                            DEFAULT: '#E2F163',
+                            hover: '#D4E64A',
+                            soft: '#FFF9AA',
+                            pale: '#FFFDE0'
+                        },
+                        vermilion: {
+                            DEFAULT: '#FF3E14',
+                            hover: '#E5320A',
+                            soft: '#FFEBE6',
+                            light: '#FFF0EC'
+                        },
+                        pinkpop: {
+                            DEFAULT: '#F47FA2',
+                            hover: '#E8668E',
+                            deep: '#8F1449',
+                            soft: '#FCE7EE',
+                            pale: '#FFF2F6'
+                        },
+                        lilac: {
+                            DEFAULT: '#BDB0FC',
+                            hover: '#A998FA',
+                            deep: '#3B2485',
+                            soft: '#F1EEFD'
+                        },
+                        skyblue: {
+                            DEFAULT: '#7EC4FB',
+                            hover: '#61B4F7',
+                            deep: '#0E4875',
+                            soft: '#EAF5FE'
+                        },
+                        emeraldpop: {
+                            DEFAULT: '#10B981',
+                            soft: '#E6F9F2',
+                            deep: '#064E3B'
+                        },
                         brand: {
                             50: '#EEF2FF',
                             100: '#E0E7FF',
@@ -34,6 +86,30 @@
                             amber: '#F59E0B',
                             pink: '#EC4899',
                         }
+                    },
+                    animation: {
+                        'marquee': 'marquee 30s linear infinite',
+                        'marquee-reverse': 'marquee-reverse 30s linear infinite',
+                        'pulse-glow': 'pulseGlow 5s ease-in-out infinite',
+                        'float-gentle': 'floatGentle 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        marquee: {
+                            '0%': { transform: 'translateX(0%)' },
+                            '100%': { transform: 'translateX(-50%)' },
+                        },
+                        'marquee-reverse': {
+                            '0%': { transform: 'translateX(-50%)' },
+                            '100%': { transform: 'translateX(0%)' },
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: '0.6', transform: 'scale(1)' },
+                            '50%': { opacity: '0.9', transform: 'scale(1.08)' },
+                        },
+                        floatGentle: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-8px)' },
+                        }
                     }
                 }
             }
@@ -45,38 +121,73 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
+        [x-cloak] { display: none !important; }
+
+        :root {
+            --hm-bg: #FAF5EC;
+            --hm-ink: #181528;
+            --hm-line: #181528;
+            --hm-card: #FFFFFF;
+            --hm-lime: #E2F163;
+            --hm-pink: #FF3E14;
+            --hm-pinkpop: #F47FA2;
+            --hm-blue: #7EC4FB;
+            --hm-lilac: #BDB0FC;
+            --hm-muted: #524B66;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #F8FAFC;
-            color: #0F172A;
+            font-family: '"Plus Jakarta Sans"', 'Inter', sans-serif;
+            background-color: #FAF5EC;
+            color: #181528;
         }
         .font-display {
-            font-family: '"Plus Jakarta Sans"', 'Inter', sans-serif;
+            font-family: '"Bricolage Grotesque"', '"Plus Jakarta Sans"', sans-serif;
         }
         .btn-brand {
-            background-color: #4F46E5;
-            color: #FFFFFF;
+            background-color: #181528;
+            color: #E2F163;
+            border: 2px solid #181528;
+            box-shadow: 3px 3px 0 #181528;
         }
         .btn-brand:hover {
-            background-color: #4338CA;
+            background-color: #FF3E14;
+            color: #FFFFFF;
         }
-        @keyframes marquee {
-            0% { transform: translateX(0%); }
-            100% { transform: translateX(-100%); }
+
+        .hm-btn {
+            border: 2px solid var(--hm-line);
+            box-shadow: 4px 4px 0 var(--hm-line);
+            transition: transform .15s ease, box-shadow .15s ease;
         }
-        @keyframes marquee2 {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(0%); }
+        .hm-btn:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--hm-line); }
+        .hm-btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--hm-line); }
+
+        .sticker-lime { background: var(--hm-lime); color: var(--hm-line); border: 2px solid var(--hm-line); box-shadow: 4px 4px 0 var(--hm-line); }
+        .grad-text2 { background-image: linear-gradient(100deg, #FF3E14, #F47FA2); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .script-accent { font-family: 'Caveat', cursive; color: var(--hm-pink); }
+
+        .noise-bg {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
         }
-        .animate-marquee {
-            animation: marquee 35s linear infinite;
-        }
-        .animate-marquee2 {
-            animation: marquee2 35s linear infinite;
-        }
+
+        .font-caveat { font-family: 'Caveat', cursive; }
+        .font-reenie { font-family: 'Reenie Beanie', cursive; }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 flex flex-col min-h-screen antialiased selection:bg-brand-50 selection:text-brand-600 relative">
+<body class="bg-[#FAF5EC] text-[#181528] flex flex-col min-h-screen antialiased selection:bg-[#E2F163] selection:text-[#181528] relative font-sans overflow-x-hidden">
+
+    <!-- Fixed Ambient Noise Texture -->
+    <div class="fixed inset-0 pointer-events-none z-0 noise-bg opacity-40"></div>
+
+    <!-- Ambient Glow Orbs -->
+    <div class="fixed top-[-5%] left-[-5%] w-[48vw] h-[48vw] rounded-full bg-[#E2F163]/20 blur-[130px] pointer-events-none -z-10 animate-pulse-glow"></div>
+    <div class="fixed top-[25%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#F47FA2]/15 blur-[150px] pointer-events-none -z-10 animate-pulse-glow" style="animation-delay: 2s;"></div>
+    <div class="fixed top-[60%] left-[-5%] w-[40vw] h-[40vw] rounded-full bg-[#7EC4FB]/20 blur-[140px] pointer-events-none -z-10"></div>
+    <div class="fixed bottom-[10%] right-[15%] w-[45vw] h-[45vw] rounded-full bg-[#BDB0FC]/20 blur-[140px] pointer-events-none -z-10"></div>
 
     <!-- Global Live Toast Alert Container -->
     @include('components.toast-container')
@@ -147,124 +258,122 @@
         @endif
     @endauth
 
-    <!-- Top Navigation Bar (Clean Light) -->
-    <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 transition duration-200" x-data="{ open: false }">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-20">
-                <!-- Logo -->
+    <!-- FLOATING GLASS PILL NAVBAR (Home Page Design Style) -->
+    <header class="sticky top-4 z-40 px-4 sm:px-6 mb-4">
+        <div class="max-w-7xl mx-auto">
+            <nav class="bg-white/85 backdrop-blur-2xl border-2 border-[#181528] rounded-full px-4 sm:px-6 py-3 flex items-center justify-between shadow-[4px_4px_0_#181528] transition-all duration-300" x-data="{ open: false }">
+                
+                <!-- Brand Signature -->
                 <a href="{{ route('home') }}" class="flex items-center space-x-3 group">
-                    <div class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center font-display font-black text-white text-lg shadow-sm group-hover:bg-brand-700 transition">
-                        TM
+                    <div class="w-9 h-9 rounded-full bg-[#E2F163] border-2 border-[#181528] flex items-center justify-center font-display font-black text-[#181528] text-base group-hover:scale-105 transition-transform duration-300 shadow-[2px_2px_0_#181528]">
+                        <span class="tracking-tighter text-sm font-extrabold">H<span class="text-[#FF3E14] text-xs">&lowast;</span></span>
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-xl font-black font-display tracking-tight text-slate-900 flex items-center gap-1">
-                            Talent<span class="text-brand-600">Marketplace</span>
+                        <span class="font-display font-black text-sm sm:text-base tracking-tight text-[#181528] flex items-center gap-1.5">
+                            Hype<span class="text-[#FF3E14]">Market</span>
+                            <span class="text-[9px] font-mono uppercase bg-[#E2F163] text-[#181528] px-2 py-0.5 rounded-full border border-[#181528] font-bold hidden sm:inline-block shadow-[1px_1px_0_#181528]">TALENT HUB</span>
                         </span>
-                        <span class="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Creator & Brand Studio</span>
                     </div>
                 </a>
 
-                <!-- Navigation Links -->
-                <div class="hidden md:flex items-center space-x-1 font-semibold text-sm text-slate-600">
-                    <a href="{{ route('home') }}" class="px-4 py-2 rounded-xl transition {{ request()->routeIs('home') ? 'bg-slate-100 text-brand-600 font-bold' : 'hover:text-slate-900 hover:bg-slate-50' }}">
+                <!-- Desktop Nav Links -->
+                <div class="hidden md:flex items-center space-x-1 text-xs font-bold font-sans text-[#524B66]">
+                    <a href="{{ route('home') }}" class="px-3.5 py-2 rounded-full transition-all duration-200 {{ request()->routeIs('home') ? 'bg-[#181528] text-[#E2F163] shadow-[2px_2px_0_#181528]' : 'hover:text-[#181528] hover:bg-black/5' }}">
                         Discover
                     </a>
-                    <a href="{{ route('influencers.public') }}" class="px-4 py-2 rounded-xl transition {{ request()->routeIs('influencers.public*') ? 'bg-slate-100 text-brand-600 font-bold' : 'hover:text-slate-900 hover:bg-slate-50' }}">
+                    <a href="{{ route('influencers.public') }}" class="px-3.5 py-2 rounded-full transition-all duration-200 {{ request()->routeIs('influencers.public*') ? 'bg-[#181528] text-[#E2F163] shadow-[2px_2px_0_#181528]' : 'hover:text-[#181528] hover:bg-black/5' }}">
                         Talent Directory
                     </a>
-                    <a href="{{ route('campaigns.public') }}" class="px-4 py-2 rounded-xl transition {{ request()->routeIs('campaigns.public*') ? 'bg-slate-100 text-brand-600 font-bold' : 'hover:text-slate-900 hover:bg-slate-50' }}">
+                    <a href="{{ route('campaigns.public') }}" class="px-3.5 py-2 rounded-full transition-all duration-200 {{ request()->routeIs('campaigns.public*') ? 'bg-[#181528] text-[#E2F163] shadow-[2px_2px_0_#181528]' : 'hover:text-[#181528] hover:bg-black/5' }}">
                         Campaign Briefs
                     </a>
-                    <a href="{{ route('how-it-works') }}" class="px-4 py-2 rounded-xl transition {{ request()->routeIs('how-it-works') ? 'bg-slate-100 text-brand-600 font-bold' : 'hover:text-slate-900 hover:bg-slate-50' }}">
+                    <a href="{{ route('how-it-works') }}" class="px-3.5 py-2 rounded-full transition-all duration-200 {{ request()->routeIs('how-it-works') ? 'bg-[#181528] text-[#E2F163] shadow-[2px_2px_0_#181528]' : 'hover:text-[#181528] hover:bg-black/5' }}">
                         How It Works
                     </a>
-                    <a href="{{ route('pricing') }}" class="px-4 py-2 rounded-xl transition {{ request()->routeIs('pricing') ? 'bg-slate-100 text-brand-600 font-bold' : 'hover:text-slate-900 hover:bg-slate-50' }}">
+                    <a href="{{ route('pricing') }}" class="px-3.5 py-2 rounded-full transition-all duration-200 {{ request()->routeIs('pricing') ? 'bg-[#181528] text-[#E2F163] shadow-[2px_2px_0_#181528]' : 'hover:text-[#181528] hover:bg-black/5' }}">
                         Pricing
                     </a>
                 </div>
 
-                <!-- Right Action Buttons -->
-                <div class="hidden md:flex items-center space-x-3 text-sm">
+                <!-- Right Action Island -->
+                <div class="hidden md:flex items-center space-x-3 text-xs font-bold font-sans">
                     @auth
                         @if(auth()->user()->isAdmin())
-                            <a href="{{ route('admin.dashboard') }}" class="px-4 py-2.5 rounded-xl font-bold bg-slate-900 hover:bg-black text-white transition shadow-sm flex items-center space-x-2">
-                                <span class="w-2 h-2 rounded-full bg-accent-purple"></span>
+                            <a href="{{ route('admin.dashboard') }}" class="hm-btn inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-[#181528] text-white transition">
+                                <span class="w-2 h-2 rounded-full bg-[#E2F163] animate-ping"></span>
                                 <span>Admin Gateway</span>
                             </a>
                         @elseif(auth()->user()->isBrand())
-                            <a href="{{ route('brand.dashboard') }}" class="px-4 py-2.5 rounded-xl font-bold btn-brand text-white transition shadow-sm flex items-center space-x-2">
-                                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                            <a href="{{ route('brand.dashboard') }}" class="hm-btn inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-[#E2F163] text-[#181528] font-black hover:bg-[#D4E64A] transition">
                                 <span>Brand Studio</span>
                             </a>
                         @else
-                            <a href="{{ route('influencer.dashboard') }}" class="px-4 py-2.5 rounded-xl font-bold btn-brand text-white transition shadow-sm flex items-center space-x-2">
-                                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                            <a href="{{ route('influencer.dashboard') }}" class="hm-btn inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-[#F47FA2] text-[#181528] font-black hover:bg-pink-300 transition">
                                 <span>Creator Studio</span>
                             </a>
                         @endif
 
                         <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf
-                            <button type="submit" class="px-3 py-2 text-slate-500 hover:text-slate-900 transition text-xs font-semibold">Log out</button>
+                            <button type="submit" class="p-2 text-[#827B96] hover:text-[#181528] transition" title="Log out">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            </button>
                         </form>
                     @else
-                        <a href="{{ route('login') }}" class="px-4 py-2 text-slate-700 hover:text-slate-900 font-bold text-sm transition">
+                        <a href="{{ route('login') }}" class="font-extrabold text-[#524B66] hover:text-[#181528] px-3 py-2 transition">
                             Sign In
                         </a>
-                        <a href="{{ route('register') }}" class="btn-brand px-5 py-2.5 rounded-xl font-bold text-white shadow-sm hover:shadow transition text-sm flex items-center space-x-1.5">
+                        <a href="{{ route('register') }}" class="group relative inline-flex items-center justify-center rounded-full bg-[#181528] text-white px-5 py-2 text-xs font-black hover:bg-[#FF3E14] transition-all duration-300 shadow-[3px_3px_0_#181528] border-2 border-[#181528] active:translate-x-[2px] active:translate-y-[2px] space-x-1.5">
                             <span>Join Marketplace</span>
-                            <span class="text-xs">&rarr;</span>
+                            <div class="w-4 h-4 rounded-full bg-[#E2F163] text-[#181528] flex items-center justify-center text-[9px] group-hover:bg-white transition">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </div>
                         </a>
                     @endauth
                 </div>
 
-                <!-- Mobile Menu Button -->
-                <div class="md:hidden flex items-center">
-                    <button @click="open = !open" class="p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                            <path x-show="open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
+                <!-- Mobile Hamburger Button -->
+                <button @click="open = !open" class="md:hidden w-9 h-9 rounded-full bg-black/5 flex items-center justify-center text-[#181528] hover:bg-black/10 transition border border-[#181528]/20">
+                    <i class="fa-solid" :class="open ? 'fa-xmark' : 'fa-bars'"></i>
+                </button>
+            </nav>
+
+            <!-- Mobile Dropdown -->
+            <div x-show="open" x-cloak class="md:hidden mt-2 bg-white/95 backdrop-blur-2xl border-2 border-[#181528] rounded-3xl p-5 shadow-[6px_6px_0_#181528] space-y-2">
+                <a href="{{ route('home') }}" class="block px-3 py-2 rounded-xl text-[#181528] font-bold hover:bg-[#FAF5EC]">Discover</a>
+                <a href="{{ route('influencers.public') }}" class="block px-3 py-2 rounded-xl text-[#181528] font-bold hover:bg-[#FAF5EC]">Talent Directory</a>
+                <a href="{{ route('campaigns.public') }}" class="block px-3 py-2 rounded-xl text-[#181528] font-bold hover:bg-[#FAF5EC]">Campaign Briefs</a>
+                <a href="{{ route('how-it-works') }}" class="block px-3 py-2 rounded-xl text-[#181528] font-bold hover:bg-[#FAF5EC]">How It Works</a>
+                <a href="{{ route('pricing') }}" class="block px-3 py-2 rounded-xl text-[#181528] font-bold hover:bg-[#FAF5EC]">Pricing</a>
+                <div class="pt-3 border-t-2 border-[#181528]/10 space-y-2">
+                    @auth
+                        @if(auth()->user()->isAdmin())
+                            <a href="{{ route('admin.dashboard') }}" class="block w-full text-center py-2.5 rounded-full font-black bg-[#181528] text-white">Admin Gateway</a>
+                        @elseif(auth()->user()->isBrand())
+                            <a href="{{ route('brand.dashboard') }}" class="block w-full text-center py-2.5 rounded-full font-black bg-[#E2F163] text-[#181528] border-2 border-[#181528]">Brand Studio</a>
+                        @else
+                            <a href="{{ route('influencer.dashboard') }}" class="block w-full text-center py-2.5 rounded-full font-black bg-[#F47FA2] text-[#181528] border-2 border-[#181528]">Creator Studio</a>
+                        @endif
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="block w-full text-center py-2 text-[#827B96] hover:text-[#181528] text-xs font-bold">Log out</button>
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}" class="block w-full text-center py-2.5 rounded-full text-[#181528] bg-[#FAF5EC] hover:bg-slate-200 font-black text-xs border-2 border-[#181528]">Sign In</a>
+                        <a href="{{ route('register') }}" class="block w-full text-center py-2.5 rounded-full bg-[#181528] text-white font-black text-xs hover:bg-[#FF3E14] border-2 border-[#181528]">Join Marketplace</a>
+                    @endauth
                 </div>
             </div>
         </div>
-
-        <!-- Mobile Menu Dropdown -->
-        <div x-show="open" class="md:hidden bg-white border-b border-slate-200 px-4 py-5 space-y-3" x-cloak>
-            <a href="{{ route('home') }}" class="block px-3 py-2 rounded-lg text-slate-800 hover:bg-slate-50 font-medium">Discover</a>
-            <a href="{{ route('influencers.public') }}" class="block px-3 py-2 rounded-lg text-slate-800 hover:bg-slate-50 font-medium">Talent Directory</a>
-            <a href="{{ route('campaigns.public') }}" class="block px-3 py-2 rounded-lg text-slate-800 hover:bg-slate-50 font-medium">Campaign Briefs</a>
-            <a href="{{ route('how-it-works') }}" class="block px-3 py-2 rounded-lg text-slate-800 hover:bg-slate-50 font-medium">How It Works</a>
-            <a href="{{ route('pricing') }}" class="block px-3 py-2 rounded-lg text-slate-800 hover:bg-slate-50 font-medium">Pricing</a>
-            <div class="pt-3 border-t border-slate-200 space-y-2">
-                @auth
-                    @if(auth()->user()->isAdmin())
-                        <a href="{{ route('admin.dashboard') }}" class="block w-full text-center py-2.5 rounded-xl font-bold bg-slate-900 text-white">Admin Gateway</a>
-                    @elseif(auth()->user()->isBrand())
-                        <a href="{{ route('brand.dashboard') }}" class="block w-full text-center py-2.5 rounded-xl font-bold btn-brand text-white">Brand Studio</a>
-                    @else
-                        <a href="{{ route('influencer.dashboard') }}" class="block w-full text-center py-2.5 rounded-xl font-bold btn-brand text-white">Creator Studio</a>
-                    @endif
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="block w-full text-center py-2 text-slate-500 hover:text-slate-900 text-xs font-semibold">Log out</button>
-                    </form>
-                @else
-                    <a href="{{ route('login') }}" class="block w-full text-center py-2.5 rounded-xl text-slate-800 bg-slate-100 hover:bg-slate-200 font-bold text-sm">Sign In</a>
-                    <a href="{{ route('register') }}" class="block w-full text-center py-2.5 rounded-xl btn-brand text-white font-bold text-sm">Join Marketplace</a>
-                @endauth
-            </div>
-        </div>
-    </nav>
+    </header>
 
     <!-- Flash Notifications -->
-    <main class="flex-grow">
+    <main class="flex-grow relative z-10">
         @if(session('success'))
             <div class="max-w-7xl mx-auto px-4 mt-6">
-                <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-3.5 rounded-2xl flex items-center justify-between text-sm font-medium shadow-xs">
+                <div class="bg-[#E6F9F2] border-2 border-[#181528] text-[#064E3B] px-5 py-3.5 rounded-2xl flex items-center justify-between text-sm font-bold shadow-[4px_4px_0_#181528]">
                     <div class="flex items-center space-x-2">
-                        <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 inline-block shrink-0"></i>
+                        <i class="fa-solid fa-circle-check text-[#10B981] text-base"></i>
                         <span>{{ session('success') }}</span>
                     </div>
                 </div>
@@ -272,9 +381,9 @@
         @endif
         @if(session('error'))
             <div class="max-w-7xl mx-auto px-4 mt-6">
-                <div class="bg-rose-50 border border-rose-200 text-rose-800 px-5 py-3.5 rounded-2xl flex items-center justify-between text-sm font-medium shadow-xs">
+                <div class="bg-[#FFEBE6] border-2 border-[#181528] text-[#8F1449] px-5 py-3.5 rounded-2xl flex items-center justify-between text-sm font-bold shadow-[4px_4px_0_#181528]">
                     <div class="flex items-center space-x-2">
-                        <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600 inline-block shrink-0"></i>
+                        <i class="fa-solid fa-triangle-exclamation text-[#FF3E14] text-base"></i>
                         <span>{{ session('error') }}</span>
                     </div>
                 </div>
@@ -844,5 +953,6 @@
         document.addEventListener('DOMContentLoaded', initFontAwesomeIcons);
         document.addEventListener('alpine:initialized', initFontAwesomeIcons);
     </script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </body>
 </html>
