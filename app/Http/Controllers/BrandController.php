@@ -109,6 +109,57 @@ class BrandController extends Controller
         return view('brand.campaigns.create', compact('categories', 'industries'));
     }
 
+    public function campaignStore(Request $request)
+    {
+        $brandProfile = $this->getBrandProfile();
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'campaign_type' => 'required|string',
+            'description' => 'required|string',
+            'budget_min' => 'required|numeric|min:0',
+            'budget_max' => 'required|numeric|min:0',
+        ]);
+
+        $campaign = Campaign::create([
+            'brand_profile_id' => $brandProfile->id,
+            'title' => $request->title,
+            'campaign_name' => $request->campaign_name ?: $request->title,
+            'slug' => Str::slug($request->title).'-'.Str::random(5),
+            'category_id' => $request->category_id,
+            'campaign_type' => $request->campaign_type,
+            'industry_id' => $request->industry_id ?: $brandProfile->industry_id,
+            'description' => $request->description,
+            'objective' => $request->objective ?: Str::limit($request->description, 200),
+            'talent_type' => $request->talent_type ?: 'influencer',
+            'number_required' => $request->number_required ?: 1,
+            'gender_req' => $request->gender_req ?: 'any',
+            'work_mode' => $request->work_mode ?: 'on_site',
+            'city' => $request->city ?: 'Nashik',
+            'budget_min' => $request->budget_min,
+            'budget_max' => $request->budget_max,
+            'currency' => 'INR',
+            'status' => 'published',
+            'shoot_date' => $request->shoot_date ?: now()->addDays(7),
+            'application_deadline' => $request->application_deadline ?: now()->addDays(14),
+        ]);
+
+        if ($request->filled('deliverables') && is_array($request->deliverables)) {
+            foreach ($request->deliverables as $del) {
+                if (! empty($del['name'])) {
+                    $campaign->deliverables()->create([
+                        'deliverable_name' => $del['name'],
+                        'deliverable_type' => $del['type'] ?? 'instagram_reel',
+                        'quantity' => $del['quantity'] ?? 1,
+                    ]);
+                }
+            }
+        }
+
+        return redirect()->route('brand.campaigns.show', $campaign->id)->with('success', 'Campaign brief posted successfully!');
+    }
+
     public function campaignEdit($id)
     {
         $brandProfile = $this->getBrandProfile();

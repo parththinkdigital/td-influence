@@ -3,230 +3,353 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Admin Portal | Talent Marketplace')</title>
+    <title>@yield('title', 'Admin Governance Gateway | Talent Marketplace')</title>
+
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        indigoBrand: {
-                            DEFAULT: '#4F46E5',
-                            hover: '#4338CA',
-                            light: '#EEF2FF',
+                        admin: {
+                            base: '#0B0F17',
+                            sidebar: '#0F172A',
+                            card: '#1E293B',
+                            accent: '#FF3E14',
+                            border: '#334155',
                         },
+                        studio: {
+                            lime: '#E2F163',
+                            vermilion: '#FF3E14',
+                            emerald: '#10B981',
+                            amber: '#F59E0B',
+                            purple: '#8B5CF6',
+                        }
                     },
                     fontFamily: {
-                        sans: ['DM Sans', 'sans-serif'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        display: ['"Outfit"', '"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"Space Grotesk"', 'monospace'],
                     }
                 }
             }
         }
     </script>
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Alpine.js & FontAwesome 6 -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <style>
-        body { font-family: 'DM Sans', sans-serif; background-color: #F8FAFC; color: #0F172A; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; color: #0F172A; }
         [x-cloak] { display: none !important; }
+        .font-mono-numbers { font-family: 'Space Grotesk', monospace; }
+        .font-display-title { font-family: 'Outfit', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen flex relative">
+<body class="bg-slate-50 text-slate-900 min-h-screen flex relative" x-data="{ mobileSidebar: false }">
 
-    <!-- Global Toast Alert Container -->
+    <!-- Global Toast Alert Container & Command Palette -->
     @include('components.toast-container')
     @include('components.command-palette')
 
-    <!-- Sidebar (Light Mode with Admin Moderation Palette) -->
-    <aside class="w-64 bg-white text-slate-900 border-r border-slate-200 hidden md:flex flex-col justify-between p-6 flex-shrink-0 sticky top-0 h-screen overflow-y-auto">
-        <div>
-            <!-- Logo -->
-            <div class="flex items-center space-x-3 mb-10">
-                <div class="w-9 h-9 rounded-xl bg-red-600 flex items-center justify-center font-bold text-white text-lg tracking-tight shadow-md">
-                    TM
+    @php
+        $pendingVerifCount = \App\Models\Verification::where('status', 'pending')->count();
+        $openDisputesCount = \App\Models\Dispute::where('status', 'open')->count();
+        $pendingCampCount = \App\Models\Campaign::where('status', 'pending_review')->count();
+    @endphp
+
+    <!-- Mobile Slide-over Drawer -->
+    <div x-show="mobileSidebar" x-cloak class="relative z-[99999] md:hidden" role="dialog" aria-modal="true">
+        <div x-show="mobileSidebar" 
+             x-transition:enter="transition-opacity ease-linear duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-linear duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="mobileSidebar = false" 
+             class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm"></div>
+
+        <div class="fixed inset-0 flex">
+            <div x-show="mobileSidebar" 
+                 x-transition:enter="transition ease-in-out duration-300 transform"
+                 x-transition:enter-start="-translate-x-full"
+                 x-transition:enter-end="translate-x-0"
+                 x-transition:leave="transition ease-in-out duration-300 transform"
+                 x-transition:leave-start="translate-x-0"
+                 x-transition:leave-end="-translate-x-full"
+                 class="relative mr-16 flex w-full max-w-xs flex-1 bg-[#0F172A] text-slate-200 flex-col justify-between p-6 shadow-2xl">
+                 
+                <div>
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-800">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-red-600 to-amber-500 flex items-center justify-center font-black text-white text-base shadow-md">
+                                <i class="fa-solid fa-shield-halved text-sm"></i>
+                            </div>
+                            <div>
+                                <span class="font-display font-black text-lg text-white tracking-tight">Admin<span class="text-red-500">Gateway</span></span>
+                                <span class="block text-[10px] font-mono text-slate-400 uppercase tracking-widest">Platform Escrow</span>
+                            </div>
+                        </div>
+                        <button type="button" @click="mobileSidebar = false" class="p-2 text-slate-400 hover:text-white rounded-lg">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+
+                    <!-- Navigation Links -->
+                    <nav class="space-y-1.5 text-xs font-semibold">
+                        <p class="text-[10px] font-mono uppercase text-slate-500 tracking-wider px-3 mb-2 font-bold">Governance</p>
+                        <a href="{{ route('admin.dashboard') }}" @click="mobileSidebar = false" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.dashboard') ? 'bg-red-500/10 text-red-400 font-bold border border-red-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-gauge-high w-4 text-center"></i>
+                                <span>Overview & Escrow</span>
+                            </div>
+                        </a>
+                        <a href="{{ route('admin.brands') }}" @click="mobileSidebar = false" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.brands*') ? 'bg-red-500/10 text-red-400 font-bold border border-red-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-building-circle-check w-4 text-center"></i>
+                                <span>Brands & Clients</span>
+                            </div>
+                        </a>
+                        <a href="{{ route('admin.influencers') }}" @click="mobileSidebar = false" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.influencers*') ? 'bg-red-500/10 text-red-400 font-bold border border-red-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-users-viewfinder w-4 text-center"></i>
+                                <span>Talent Directory</span>
+                            </div>
+                        </a>
+                        <a href="{{ route('admin.verifications') }}" @click="mobileSidebar = false" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.verifications*') ? 'bg-red-500/10 text-red-400 font-bold border border-red-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-id-card-clip w-4 text-center"></i>
+                                <span>Verification Queue</span>
+                            </div>
+                            @if($pendingVerifCount > 0)
+                                <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold border border-amber-500/30">{{ $pendingVerifCount }}</span>
+                            @endif
+                        </a>
+                        <a href="{{ route('admin.campaigns') }}" @click="mobileSidebar = false" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.campaigns*') ? 'bg-red-500/10 text-red-400 font-bold border border-red-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-bullhorn w-4 text-center"></i>
+                                <span>Campaign Briefs</span>
+                            </div>
+                            @if($pendingCampCount > 0)
+                                <span class="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-[10px] font-mono font-bold border border-red-500/30">{{ $pendingCampCount }}</span>
+                            @endif
+                        </a>
+
+                        <p class="text-[10px] font-mono uppercase text-slate-500 tracking-wider px-3 pt-4 mb-2 font-bold">Finance & Safety</p>
+                        <a href="{{ route('admin.disputes') }}" @click="mobileSidebar = false" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.disputes*') ? 'bg-red-500/10 text-red-400 font-bold border border-red-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-scale-balanced w-4 text-center"></i>
+                                <span>Disputes & Escrow</span>
+                            </div>
+                            @if($openDisputesCount > 0)
+                                <span class="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-mono font-bold">{{ $openDisputesCount }}</span>
+                            @endif
+                        </a>
+                        <a href="{{ route('admin.invoices') }}" @click="mobileSidebar = false" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.invoices*') ? 'bg-red-500/10 text-red-400 font-bold border border-red-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-file-invoice-dollar w-4 text-center"></i>
+                                <span>Tax Ledger & GMV</span>
+                            </div>
+                        </a>
+                        <a href="{{ route('admin.categories') }}" @click="mobileSidebar = false" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.categories*') ? 'bg-red-500/10 text-red-400 font-bold border border-red-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-tags w-4 text-center"></i>
+                                <span>Taxonomies & Niches</span>
+                            </div>
+                        </a>
+                    </nav>
                 </div>
-                <span class="text-xl font-bold tracking-tight text-slate-900">Admin <span class="text-red-600">Gateway</span></span>
+
+                <div class="pt-4 border-t border-slate-800 flex items-center justify-between">
+                    <div>
+                        <div class="font-bold text-white text-xs truncate max-w-[130px]">{{ auth()->user()->name }}</div>
+                        <div class="text-[10px] text-red-400 font-mono">Super Moderator</div>
+                    </div>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-red-600 text-white text-xs font-semibold transition">
+                            Exit
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Desktop Sidebar (Midnight Slate & Red Governance Palette) -->
+    <aside class="w-64 bg-[#0F172A] text-slate-200 border-r border-slate-800 hidden md:flex flex-col justify-between p-5 flex-shrink-0 sticky top-0 h-screen overflow-y-auto z-40">
+        <div>
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3 mb-8 px-2">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-red-600 to-amber-500 flex items-center justify-center font-black text-white text-base shadow-md">
+                    <i class="fa-solid fa-shield-halved text-sm"></i>
+                </div>
+                <div>
+                    <span class="font-display font-black text-lg text-white tracking-tight">Admin<span class="text-red-500">Gateway</span></span>
+                    <span class="block text-[9px] font-mono text-slate-400 uppercase tracking-widest">Platform Escrow</span>
+                </div>
             </div>
 
             <!-- Navigation Links -->
-            <nav class="space-y-1.5 text-sm font-medium">
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl {{ request()->routeIs('admin.dashboard') ? 'bg-red-50 text-red-600 font-semibold border border-red-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-                    <span>Dashboard</span>
+            <nav class="space-y-1 text-xs font-semibold">
+                <p class="text-[10px] font-mono uppercase text-slate-500 tracking-wider px-3 mb-2 font-bold">Governance</p>
+
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.dashboard') ? 'bg-red-500/15 text-red-400 font-bold border border-red-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-gauge-high w-4 text-center {{ request()->routeIs('admin.dashboard') ? 'text-red-400' : 'text-slate-400' }}"></i>
+                        <span>Overview & Escrow</span>
+                    </div>
                 </a>
-                <a href="{{ route('admin.brands') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl {{ request()->routeIs('admin.brands*') ? 'bg-red-50 text-red-600 font-semibold border border-red-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-                    <span>Manage Brands</span>
+
+                <a href="{{ route('admin.brands') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.brands*') ? 'bg-red-500/15 text-red-400 font-bold border border-red-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-building-circle-check w-4 text-center {{ request()->routeIs('admin.brands*') ? 'text-red-400' : 'text-slate-400' }}"></i>
+                        <span>Brands & Clients</span>
+                    </div>
                 </a>
-                <a href="{{ route('admin.influencers') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl {{ request()->routeIs('admin.influencers*') ? 'bg-red-50 text-red-600 font-semibold border border-red-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-                    <span>Manage Talent</span>
+
+                <a href="{{ route('admin.influencers') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.influencers*') ? 'bg-red-500/15 text-red-400 font-bold border border-red-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-users-viewfinder w-4 text-center {{ request()->routeIs('admin.influencers*') ? 'text-red-400' : 'text-slate-400' }}"></i>
+                        <span>Talent Directory</span>
+                    </div>
                 </a>
-                <a href="{{ route('admin.verifications') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl {{ request()->routeIs('admin.verifications*') ? 'bg-red-50 text-red-600 font-semibold border border-red-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-                    <span>Verification Queue</span>
+
+                <a href="{{ route('admin.verifications') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.verifications*') ? 'bg-red-500/15 text-red-400 font-bold border border-red-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-id-card-clip w-4 text-center {{ request()->routeIs('admin.verifications*') ? 'text-red-400' : 'text-slate-400' }}"></i>
+                        <span>Verification Queue</span>
+                    </div>
+                    @if($pendingVerifCount > 0)
+                        <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold border border-amber-500/30">{{ $pendingVerifCount }}</span>
+                    @endif
                 </a>
-                <a href="{{ route('admin.campaigns') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl {{ request()->routeIs('admin.campaigns*') ? 'bg-red-50 text-red-600 font-semibold border border-red-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-                    <span>Campaign Briefs</span>
+
+                <a href="{{ route('admin.campaigns') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.campaigns*') ? 'bg-red-500/15 text-red-400 font-bold border border-red-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-bullhorn w-4 text-center {{ request()->routeIs('admin.campaigns*') ? 'text-red-400' : 'text-slate-400' }}"></i>
+                        <span>Campaign Briefs</span>
+                    </div>
+                    @if($pendingCampCount > 0)
+                        <span class="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-[10px] font-mono font-bold border border-red-500/30">{{ $pendingCampCount }}</span>
+                    @endif
                 </a>
-                <a href="{{ route('admin.categories') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl {{ request()->routeIs('admin.categories*') ? 'bg-red-50 text-red-600 font-semibold border border-red-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-                    <span>Taxonomies</span>
+
+                <p class="text-[10px] font-mono uppercase text-slate-500 tracking-wider px-3 pt-5 mb-2 font-bold">Finance & Safety</p>
+
+                <a href="{{ route('admin.disputes') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.disputes*') ? 'bg-red-500/15 text-red-400 font-bold border border-red-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-scale-balanced w-4 text-center {{ request()->routeIs('admin.disputes*') ? 'text-red-400' : 'text-slate-400' }}"></i>
+                        <span>Disputes & Escrow</span>
+                    </div>
+                    @if($openDisputesCount > 0)
+                        <span class="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-mono font-bold">{{ $openDisputesCount }}</span>
+                    @endif
                 </a>
-                <a href="{{ route('admin.disputes') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl {{ request()->routeIs('admin.disputes*') ? 'bg-red-50 text-red-600 font-semibold border border-red-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-                    <span>Dispute Resolution</span>
+
+                <a href="{{ route('admin.invoices') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.invoices*') ? 'bg-red-500/15 text-red-400 font-bold border border-red-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-file-invoice-dollar w-4 text-center {{ request()->routeIs('admin.invoices*') ? 'text-red-400' : 'text-slate-400' }}"></i>
+                        <span>Tax Ledger & GMV</span>
+                    </div>
                 </a>
-                <a href="{{ route('admin.invoices') }}" class="flex items-center space-x-3 px-4 py-2.5 rounded-xl {{ request()->routeIs('admin.invoices*') ? 'bg-red-50 text-red-600 font-semibold border border-red-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
-                    <span>Tax Ledger & Invoices</span>
+
+                <a href="{{ route('admin.categories') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.categories*') ? 'bg-red-500/15 text-red-400 font-bold border border-red-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-tags w-4 text-center {{ request()->routeIs('admin.categories*') ? 'text-red-400' : 'text-slate-400' }}"></i>
+                        <span>Taxonomies & Niches</span>
+                    </div>
                 </a>
             </nav>
         </div>
 
-        <!-- User Profile & Logout -->
-        <div class="pt-6 border-t border-slate-200">
-            <div class="flex items-center justify-between">
-                <div>
-                    <div class="font-bold text-slate-900 text-sm truncate max-w-[140px]">{{ auth()->user()->name }}</div>
-                    <div class="text-[10px] text-red-600 font-semibold uppercase">Super Moderator</div>
+        <!-- Footer Profile -->
+        <div class="pt-4 border-t border-slate-800">
+            <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-xl border border-slate-800">
+                <div class="flex items-center space-x-2.5 min-w-0">
+                    <div class="w-8 h-8 rounded-lg bg-red-600/20 text-red-400 border border-red-500/30 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    </div>
+                    <div class="min-w-0">
+                        <div class="font-bold text-white text-xs truncate max-w-[100px]">{{ auth()->user()->name }}</div>
+                        <div class="text-[9px] text-red-400 font-mono font-semibold uppercase">Super Moderator</div>
+                    </div>
                 </div>
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout') }}" class="m-0">
                     @csrf
-                    <button type="submit" class="text-slate-500 hover:text-slate-900 p-2 text-xs font-semibold">Exit</button>
+                    <button type="submit" class="text-slate-400 hover:text-rose-400 p-1.5 transition text-xs" title="Logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
                 </form>
             </div>
         </div>
     </aside>
 
     <!-- Main Content Area -->
-    <div class="flex-grow flex flex-col min-w-0">
+    <div class="flex-grow flex flex-col min-w-0 bg-slate-50">
         <!-- Top Navbar -->
-        <header class="sticky top-0 z-30 h-20 bg-white/95 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8">
-            <div>
-                <a href="{{ route('home') }}" target="_blank" class="text-xs text-slate-500 hover:text-slate-900 flex items-center space-x-1 font-medium">
-                    <span>View Marketplace Website &rarr;</span>
-                </a>
-            </div>
-
-            <div class="flex items-center space-x-4">
-                <button type="button" 
-                        @click="window.dispatchEvent(new KeyboardEvent('keydown', {'key':'k', 'ctrlKey':true}))"
-                        class="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-medium transition border border-slate-200"
-                        title="Search anything (Ctrl+K)">
-                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <span>Quick Search...</span>
-                    <kbd class="px-1.5 py-0.5 bg-white text-slate-500 rounded text-[10px] font-mono font-bold shadow-2xs">Ctrl+K</kbd>
+        <header class="sticky top-0 z-30 h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center space-x-3">
+                <button type="button" @click="mobileSidebar = true" class="md:hidden p-2 text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition" title="Open navigation menu">
+                    <i class="fa-solid fa-bars text-lg"></i>
                 </button>
 
-                <span class="px-3.5 py-1.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold rounded-full">
-                    Platform Moderation Active
-                </span>
+                <div class="flex items-center space-x-2 text-xs text-slate-500 font-medium">
+                    <a href="{{ route('home') }}" target="_blank" class="hover:text-red-600 flex items-center space-x-1.5 transition">
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[11px]"></i>
+                        <span class="hidden sm:inline">Public Marketplace</span>
+                    </a>
+                    <span class="text-slate-300">/</span>
+                    <span class="text-slate-800 font-semibold font-mono">Platform Governance</span>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <!-- Command Palette Trigger -->
+                <button type="button" 
+                        @click="window.dispatchEvent(new KeyboardEvent('keydown', {'key':'k', 'ctrlKey':true}))"
+                        class="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-medium transition border border-slate-200/60"
+                        title="Search anything (Ctrl+K)">
+                    <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs"></i>
+                    <span>Quick Search...</span>
+                    <kbd class="px-1.5 py-0.5 bg-white text-slate-500 rounded text-[10px] font-mono font-bold shadow-2xs border border-slate-200">Ctrl+K</kbd>
+                </button>
+
+                <div class="flex items-center space-x-2 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold rounded-full font-mono">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="hidden sm:inline">Escrow Protocol Active</span>
+                    <span class="sm:hidden">Active</span>
+                </div>
             </div>
         </header>
 
-        <!-- Main Body -->
-        <main class="p-6 md:p-8 lg:p-10 flex-grow max-w-7xl w-full mx-auto">
+        <!-- Main Body Content -->
+        <main class="p-4 sm:p-6 lg:p-8 flex-grow max-w-7xl w-full mx-auto">
             @if(session('success'))
-                <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl mb-6 text-sm font-medium">
-                    {{ session('success') }}
+                <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl mb-6 text-sm font-medium flex items-center space-x-3 shadow-xs">
+                    <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                    <span>{{ session('success') }}</span>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-2xl mb-6 text-sm font-medium flex items-center space-x-3 shadow-xs">
+                    <i class="fa-solid fa-circle-exclamation text-rose-600"></i>
+                    <span>{{ session('error') }}</span>
                 </div>
             @endif
 
             @yield('content')
         </main>
     </div>
-
-    <script>
-        function initFontAwesomeIcons() {
-            const iconMap = {
-                'instagram': 'fa-brands fa-instagram',
-                'youtube': 'fa-brands fa-youtube',
-                'tiktok': 'fa-brands fa-tiktok',
-                'twitter': 'fa-brands fa-x-twitter',
-                'facebook': 'fa-brands fa-facebook',
-                'linkedin': 'fa-brands fa-linkedin',
-                'whatsapp': 'fa-brands fa-whatsapp',
-                'google': 'fa-brands fa-google',
-                'sparkles': 'fa-solid fa-wand-magic-sparkles',
-                'sparkle': 'fa-solid fa-wand-magic-sparkles',
-                'shield-check': 'fa-solid fa-shield-halved',
-                'shield-alert': 'fa-solid fa-shield-halved',
-                'shield': 'fa-solid fa-shield-halved',
-                'check': 'fa-solid fa-check',
-                'check-check': 'fa-solid fa-check-double',
-                'check-circle': 'fa-solid fa-circle-check',
-                'alert-triangle': 'fa-solid fa-triangle-exclamation',
-                'alert-circle': 'fa-solid fa-circle-exclamation',
-                'clock': 'fa-solid fa-clock',
-                'user': 'fa-solid fa-user',
-                'user-cog': 'fa-solid fa-user-gear',
-                'users': 'fa-solid fa-users',
-                'lock': 'fa-solid fa-lock',
-                'key-round': 'fa-solid fa-key',
-                'key': 'fa-solid fa-key',
-                'message-circle': 'fa-solid fa-message',
-                'messages-square': 'fa-solid fa-comments',
-                'search': 'fa-solid fa-magnifying-glass',
-                'external-link': 'fa-solid fa-arrow-up-right-from-square',
-                'calendar': 'fa-solid fa-calendar-days',
-                'credit-card': 'fa-solid fa-credit-card',
-                'dollar-sign': 'fa-solid fa-dollar-sign',
-                'image': 'fa-solid fa-image',
-                'camera': 'fa-solid fa-camera',
-                'film': 'fa-solid fa-film',
-                'video': 'fa-solid fa-video',
-                'play': 'fa-solid fa-play',
-                'upload-cloud': 'fa-solid fa-cloud-arrow-up',
-                'upload': 'fa-solid fa-upload',
-                'trash-2': 'fa-solid fa-trash-can',
-                'trash': 'fa-solid fa-trash-can',
-                'edit': 'fa-solid fa-pen-to-square',
-                'edit-3': 'fa-solid fa-pen-to-square',
-                'settings': 'fa-solid fa-gear',
-                'log-out': 'fa-solid fa-right-from-bracket',
-                'arrow-right': 'fa-solid fa-arrow-right',
-                'arrow-left': 'fa-solid fa-arrow-left',
-                'eye': 'fa-solid fa-eye',
-                'heart': 'fa-solid fa-heart',
-                'share-2': 'fa-solid fa-share-nodes',
-                'share': 'fa-solid fa-share-nodes',
-                'bookmark': 'fa-solid fa-bookmark',
-                'zap': 'fa-solid fa-bolt',
-                'plus': 'fa-solid fa-plus',
-                'refresh-cw': 'fa-solid fa-rotate',
-                'building-2': 'fa-solid fa-building',
-                'briefcase': 'fa-solid fa-briefcase',
-                'badge-check': 'fa-solid fa-certificate',
-                'file-badge-2': 'fa-solid fa-file-shield',
-                'file-check': 'fa-solid fa-file-circle-check',
-                'file-text': 'fa-solid fa-file-lines',
-                'globe': 'fa-solid fa-globe',
-                'car': 'fa-solid fa-car',
-                'check-square': 'fa-solid fa-square-check',
-                'send': 'fa-solid fa-paper-plane',
-                'bell': 'fa-solid fa-bell',
-                'phone': 'fa-solid fa-phone',
-                'smartphone': 'fa-solid fa-mobile-screen',
-                'star': 'fa-solid fa-star',
-                'x': 'fa-solid fa-xmark',
-                'menu': 'fa-solid fa-bars',
-                'chevron-down': 'fa-solid fa-chevron-down',
-                'chevron-up': 'fa-solid fa-chevron-up',
-                'chevron-right': 'fa-solid fa-chevron-right',
-                'chevron-left': 'fa-solid fa-chevron-left',
-                'trending-up': 'fa-solid fa-arrow-trend-up',
-                'activity': 'fa-solid fa-chart-line',
-                'bar-chart-2': 'fa-solid fa-chart-simple',
-                'pie-chart': 'fa-solid fa-chart-pie',
-                'award': 'fa-solid fa-award',
-            };
-
-            document.querySelectorAll('[data-lucide]').forEach(el => {
-                const icon = el.getAttribute('data-lucide');
-                const fa = iconMap[icon] || `fa-solid fa-${icon}`;
-                el.className = `${el.className} ${fa}`.trim();
-                el.removeAttribute('data-lucide');
-            });
-        }
-        document.addEventListener('DOMContentLoaded', initFontAwesomeIcons);
-        document.addEventListener('alpine:initialized', initFontAwesomeIcons);
-        setInterval(initFontAwesomeIcons, 600);
-    </script>
 </body>
 </html>
