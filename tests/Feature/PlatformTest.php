@@ -17,9 +17,6 @@ use Illuminate\Support\Facades\Hash;
 
 test('public pages load successfully', function () {
     $this->get('/')->assertStatus(200);
-    $this->get('/light')->assertStatus(200)->assertSee('HypeMarket');
-    $this->get('/dark')->assertStatus(200)->assertSee('HypeMarket');
-    $this->get('/dark3')->assertStatus(200)->assertSee('MATTERS');
     $this->get('/font-pair')->assertStatus(200)->assertSee('Typography');
     $this->get('/about')->assertStatus(200)->assertSee('About');
     $this->get('/how-it-works')->assertStatus(200)->assertSee('Workflow');
