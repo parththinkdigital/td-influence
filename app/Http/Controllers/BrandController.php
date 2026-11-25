@@ -25,7 +25,23 @@ class BrandController extends Controller
 {
     protected function getBrandProfile()
     {
-        return Auth::user()->brandProfile;
+        $user = Auth::user();
+        if (! $user) {
+            return null;
+        }
+
+        if (! $user->brandProfile && $user->role === 'brand') {
+            return BrandProfile::firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'company_name' => $user->name ?: 'Brand Studio',
+                    'contact_person' => $user->name ?: 'Brand Admin',
+                    'verification_status' => 'unverified',
+                ]
+            );
+        }
+
+        return $user->brandProfile;
     }
 
     public function dashboard()
@@ -939,7 +955,12 @@ class BrandController extends Controller
         }
 
         if ($notification->action_url) {
-            return redirect($notification->action_url);
+            $url = $notification->action_url;
+            if (Str::startsWith($url, ['/', url('/')])) {
+                return redirect($url);
+            }
+
+            return redirect()->route('brand.dashboard');
         }
 
         return back()->with('success', 'Notification marked as read.');

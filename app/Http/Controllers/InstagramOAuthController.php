@@ -43,6 +43,15 @@ class InstagramOAuthController extends Controller
      */
     public function callback(Request $request, SocialSyncService $syncService)
     {
+        $expectedState = session('instagram_oauth_state');
+        $receivedState = $request->input('state');
+        if ($expectedState && (! $receivedState || ! hash_equals((string) $expectedState, (string) $receivedState))) {
+            return redirect()->route('influencer.social')->withErrors([
+                'oauth' => 'Invalid or expired OAuth state parameter. Please try again.',
+            ]);
+        }
+        session()->forget('instagram_oauth_state');
+
         if ($request->has('error')) {
             $errDesc = $request->input('error_description', $request->input('error_message', $request->input('error')));
             Log::warning('Instagram OAuth Denied/Error: '.$errDesc);

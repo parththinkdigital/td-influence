@@ -29,7 +29,23 @@ class InfluencerController extends Controller
 {
     protected function getTalentProfile()
     {
-        return Auth::user()->talentProfile;
+        $user = Auth::user();
+        if (! $user) {
+            return null;
+        }
+
+        if (! $user->talentProfile && ($user->role === 'talent' || $user->role === 'influencer')) {
+            return TalentProfile::firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'display_name' => $user->name ?: 'Creator',
+                    'username' => 'creator_'.$user->id.'_'.Str::lower(Str::random(4)),
+                    'verification_level' => 1,
+                ]
+            );
+        }
+
+        return $user->talentProfile;
     }
 
     public function dashboard()
@@ -1339,7 +1355,12 @@ class InfluencerController extends Controller
         }
 
         if ($notification->action_url) {
-            return redirect($notification->action_url);
+            $url = $notification->action_url;
+            if (Str::startsWith($url, ['/', url('/')])) {
+                return redirect($url);
+            }
+
+            return redirect()->route('influencer.dashboard');
         }
 
         return back()->with('success', 'Notification marked as read.');
