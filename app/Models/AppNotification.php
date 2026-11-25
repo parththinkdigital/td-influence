@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\NotificationBroadcasted;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -57,7 +58,7 @@ class AppNotification extends Model
         ?int $senderId = null,
         ?array $data = null
     ): self {
-        return self::create([
+        $notification = self::create([
             'user_id' => $userId,
             'sender_id' => $senderId,
             'type' => $type,
@@ -66,5 +67,13 @@ class AppNotification extends Model
             'action_url' => $actionUrl,
             'data' => $data,
         ]);
+
+        try {
+            broadcast(new NotificationBroadcasted($notification));
+        } catch (\Throwable $e) {
+            // Silently fall back if WebSockets/broadcasting is unavailable
+        }
+
+        return $notification;
     }
 }

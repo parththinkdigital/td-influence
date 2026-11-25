@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageSent;
 use App\Models\AppNotification;
 use App\Models\Booking;
 use App\Models\BrandTalentListItem;
@@ -68,7 +69,7 @@ class BrandController extends Controller
     {
         $brandProfile = $this->getBrandProfile();
 
-        $request->validate([
+        $validated = $request->validate([
             'company_name' => 'required|string|max:255',
             'logo' => 'nullable|url',
             'website' => 'nullable|url',
@@ -84,7 +85,7 @@ class BrandController extends Controller
             'gstin_pan' => 'nullable|string',
         ]);
 
-        $brandProfile->update($request->all());
+        $brandProfile->update($validated);
 
         if ($request->filled('logo')) {
             Auth::user()->update(['avatar' => $request->logo]);
@@ -731,6 +732,12 @@ class BrandController extends Controller
 
         $conversation->touch();
 
+        try {
+            broadcast(new MessageSent($message))->toOthers();
+        } catch (\Throwable $e) {
+            // Silently fall back if broadcast is unavailable
+        }
+
         // Send AppNotification to Talent
         $brandName = Auth::user()->brandProfile->company_name ?? Auth::user()->name;
         $campaignTitle = $conversation->campaign->title ?? 'Campaign';
@@ -871,12 +878,19 @@ class BrandController extends Controller
             }
 
             // System Message
-            Message::create([
+            $systemMessage = Message::create([
                 'conversation_id' => $conversation->id,
                 'sender_id' => Auth::id(),
                 'message_text' => '🤝 Deal Confirmed! Commercial terms locked at ₹'.number_format($agreedFee).' ('.$usageLabel.', '.($message->revisions_included ?: 1).' Revision(s)'.($message->exclusivity_days ? ', '.$message->exclusivity_days.'d Exclusivity' : '').'). Booking is active!',
                 'proposal_status' => 'accepted',
             ]);
+
+            try {
+                broadcast(new MessageSent($message))->toOthers();
+                broadcast(new MessageSent($systemMessage))->toOthers();
+            } catch (\Throwable $e) {
+                // Silently fall back if broadcast is unavailable
+            }
 
             // Notify Creator
             $brandName = Auth::user()->brandProfile->company_name ?? Auth::user()->name;

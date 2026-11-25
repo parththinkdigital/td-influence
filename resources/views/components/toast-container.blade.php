@@ -122,6 +122,38 @@ window.addEventListener('show-toast', function(e) {
 });
 </script>
 
+@auth
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function setupEchoNotifications() {
+        if (!window.Echo) return;
+        try {
+            window.Echo.private('user.{{ Auth::id() }}')
+                .listen('.NotificationBroadcasted', function(e) {
+                    window.showToast({
+                        id: e.id,
+                        type: e.type,
+                        title: e.title,
+                        body: e.body,
+                        action_url: e.action_url,
+                        data: e.data
+                    });
+                    window.dispatchEvent(new CustomEvent('notification-received', { detail: e }));
+                });
+        } catch (err) {
+            console.warn('Echo notification subscription skipped:', err);
+        }
+    }
+
+    if (window.Echo) {
+        setupEchoNotifications();
+    } else {
+        window.addEventListener('load', setupEchoNotifications);
+    }
+});
+</script>
+@endauth
+
 <!-- Live Toast Notification Container -->
 <div x-data="toastManager()" 
      class="fixed top-5 right-5 z-[999999] flex flex-col space-y-3 max-w-sm w-full pointer-events-none px-4 sm:px-0">

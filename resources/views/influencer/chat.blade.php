@@ -409,7 +409,7 @@ function talentChat(conversationId, currentUserId) {
     return {
         conversationId: conversationId,
         currentUserId: currentUserId,
-        messages: {!! json_encode($jsonMessages) !!},
+        messages: @js($jsonMessages),
         isBookingConfirmed: {{ ($booking && $booking->status === 'confirmed') ? 'true' : 'false' }},
         messageText: '',
         proposalPrice: '',
@@ -443,9 +443,52 @@ function talentChat(conversationId, currentUserId) {
             });
 
             this.scrollToBottom();
+            this.setupEcho();
             this.pollInterval = setInterval(() => {
                 this.fetchMessages();
             }, 3000);
+        },
+
+        setupEcho() {
+            const listen = () => {
+                if (window.Echo) {
+                    window.Echo.private(`chat.${this.conversationId}`)
+                        .listen('.MessageSent', (e) => {
+                            this.handleIncomingMessage(e);
+                        });
+                }
+            };
+            if (window.Echo) {
+                listen();
+            } else {
+                window.addEventListener('load', listen);
+            }
+        },
+
+        handleIncomingMessage(e) {
+            const index = this.messages.findIndex(m => m.id === e.id);
+            const msgObj = {
+                id: e.id,
+                sender_id: e.sender_id,
+                is_me: Number(e.sender_id) === Number(this.authUserId),
+                sender_name: e.sender_name,
+                message_text: e.message_text,
+                proposal_price: e.proposal_price,
+                proposal_status: e.proposal_status,
+                usage_rights: e.usage_rights,
+                revisions_included: e.revisions_included,
+                exclusivity_days: e.exclusivity_days,
+                attachments: e.attachments,
+                created_at_human: e.created_at_human
+            };
+
+            if (index !== -1) {
+                this.messages[index] = { ...this.messages[index], ...msgObj };
+            } else {
+                this.messages.push(msgObj);
+            }
+
+            this.scrollToBottom();
         },
 
         scrollToBottom() {

@@ -19,7 +19,7 @@ class InstagramWebhookController extends Controller
 
         $expectedToken = config('services.meta.webhook_verify_token', 'talent_marketplace_secret_2026');
 
-        if ($mode === 'subscribe' && (string) $token === (string) $expectedToken) {
+        if ($mode === 'subscribe' && hash_equals((string) $expectedToken, (string) $token)) {
             Log::info('Instagram Webhook Verified Successfully!', ['challenge' => $challenge]);
 
             return response((string) $challenge, 200, [

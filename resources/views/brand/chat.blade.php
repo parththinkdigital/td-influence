@@ -175,8 +175,68 @@ function brandChat(conversationId, authUserId) {
         messages: [],
         newMessage: '',
         initChat() {
+            if (typeof window.setActiveConversation === 'function') {
+                window.setActiveConversation(this.conversationId);
+            } else {
+                window.__activeConversationId = String(this.conversationId);
+            }
+            window.addEventListener('beforeunload', () => {
+                if (typeof window.setActiveConversation === 'function') {
+                    window.setActiveConversation(null);
+                }
+            });
+
             this.fetchMessages();
+            this.setupEcho();
             setInterval(() => this.fetchMessages(), 5000);
+        },
+        setupEcho() {
+            const listen = () => {
+                if (window.Echo) {
+                    window.Echo.private(`chat.${this.conversationId}`)
+                        .listen('.MessageSent', (e) => {
+                            this.handleIncomingMessage(e);
+                        });
+                }
+            };
+            if (window.Echo) {
+                listen();
+            } else {
+                window.addEventListener('load', listen);
+            }
+        },
+        handleIncomingMessage(e) {
+            const index = this.messages.findIndex(m => m.id === e.id);
+            const msgObj = {
+                id: e.id,
+                sender_id: e.sender_id,
+                is_me: Number(e.sender_id) === Number(this.authUserId),
+                sender_name: e.sender_name,
+                message_text: e.message_text,
+                proposal_price: e.proposal_price,
+                proposal_status: e.proposal_status,
+                usage_rights: e.usage_rights,
+                revisions_included: e.revisions_included,
+                exclusivity_days: e.exclusivity_days,
+                attachments: e.attachments,
+                created_at_human: e.created_at_human
+            };
+
+            if (index !== -1) {
+                this.messages[index] = { ...this.messages[index], ...msgObj };
+            } else {
+                this.messages.push(msgObj);
+            }
+
+            this.scrollToBottom();
+        },
+        scrollToBottom() {
+            this.$nextTick(() => {
+                const container = this.$refs.messagesContainer;
+                if (container) {
+                    container.scrollTop = container.scrollHeight;
+                }
+            });
         },
         fetchMessages() {
             fetch(`/brand/chat/${this.conversationId}/fetch`)
@@ -184,6 +244,7 @@ function brandChat(conversationId, authUserId) {
                 .then(data => {
                     if (data && data.messages) {
                         this.messages = data.messages;
+                        this.scrollToBottom();
                     }
                 })
                 .catch(() => {});
@@ -203,7 +264,15 @@ function brandChat(conversationId, authUserId) {
             })
             .then(res => res.json())
             .then(data => {
-                this.fetchMessages();
+                if (data && data.message) {
+                    const exists = this.messages.some(m => m.id === data.message.id);
+                    if (!exists) {
+                        this.messages.push(data.message);
+                        this.scrollToBottom();
+                    }
+                } else {
+                    this.fetchMessages();
+                }
             })
             .catch(() => {});
         }

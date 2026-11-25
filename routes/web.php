@@ -236,7 +236,7 @@ Route::prefix('influencer')->middleware(['auth', RoleMiddleware::class.':talent,
 
     // Talent Verification & Govt KYC Hub
     Route::get('/verification', [VerificationController::class, 'index'])->name('verification');
-    Route::post('/verification/send-phone-otp', [VerificationController::class, 'sendPhoneOtp'])->name('verification.send_phone_otp');
-    Route::post('/verification/verify-phone-otp', [VerificationController::class, 'verifyPhoneOtp'])->name('verification.verify_phone_otp');
+    Route::post('/verification/send-phone-otp', [VerificationController::class, 'sendPhoneOtp'])->middleware('throttle:6,1')->name('verification.send_phone_otp');
+    Route::post('/verification/verify-phone-otp', [VerificationController::class, 'verifyPhoneOtp'])->middleware('throttle:6,1')->name('verification.verify_phone_otp');
     Route::post('/verification/submit-id', [VerificationController::class, 'submitGovtId'])->name('verification.submit_govt_id');
 });

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageSent;
 use App\Models\AppNotification;
 use App\Models\Booking;
 use App\Models\Campaign;
@@ -1129,6 +1130,12 @@ class InfluencerController extends Controller
 
         $conversation->touch();
 
+        try {
+            broadcast(new MessageSent($message))->toOthers();
+        } catch (\Throwable $e) {
+            // Silently fall back if broadcast is unavailable
+        }
+
         // Notify Brand
         $talentProfile = $this->getTalentProfile();
         $creatorName = $talentProfile->display_name ?: Auth::user()->name;
@@ -1269,12 +1276,19 @@ class InfluencerController extends Controller
             }
 
             // System Message
-            Message::create([
+            $systemMessage = Message::create([
                 'conversation_id' => $conversation->id,
                 'sender_id' => Auth::id(),
                 'message_text' => '🤝 Deal Confirmed! Commercial terms locked at ₹'.number_format($agreedFee).' ('.$usageLabel.', '.($message->revisions_included ?: 1).' Revision(s)'.($message->exclusivity_days ? ', '.$message->exclusivity_days.'d Exclusivity' : '').'). Booking is active!',
                 'proposal_status' => 'accepted',
             ]);
+
+            try {
+                broadcast(new MessageSent($message))->toOthers();
+                broadcast(new MessageSent($systemMessage))->toOthers();
+            } catch (\Throwable $e) {
+                // Silently fall back if broadcast is unavailable
+            }
 
             // Notify Brand
             $talentProfile = $this->getTalentProfile();

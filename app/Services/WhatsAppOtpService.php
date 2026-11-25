@@ -141,8 +141,11 @@ class WhatsAppOtpService
             'phone' => $normalizedPhone,
             'expires_in_minutes' => 10,
             'live_sent' => $sentViaLiveApi,
-            'test_otp' => $otp,
         ];
+
+        if (app()->environment('local', 'testing')) {
+            $response['test_otp'] = $otp;
+        }
 
         return $response;
     }

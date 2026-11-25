@@ -19,7 +19,7 @@ class WhatsAppWebhookController extends Controller
         $expectedToken = config('services.whatsapp.webhook_verify_token')
             ?: config('services.meta.webhook_verify_token', env('WHATSAPP_WEBHOOK_VERIFY_TOKEN', 'talent_marketplace_secret_2026'));
 
-        if ($mode === 'subscribe' && (string) $token === (string) $expectedToken) {
+        if ($mode === 'subscribe' && hash_equals((string) $expectedToken, (string) $token)) {
             Log::info('WhatsApp Webhook Verified Successfully!', ['challenge' => $challenge]);
 
             return response((string) $challenge, 200, [
