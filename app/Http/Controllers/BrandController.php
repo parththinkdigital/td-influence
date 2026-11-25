@@ -30,7 +30,7 @@ class BrandController extends Controller
             return null;
         }
 
-        if (! $user->brandProfile && $user->role === 'brand') {
+        if (! $user->brandProfile) {
             return BrandProfile::firstOrCreate(
                 ['user_id' => $user->id],
                 [

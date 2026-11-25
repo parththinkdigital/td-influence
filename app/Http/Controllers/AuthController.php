@@ -77,20 +77,29 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password, 'role' => 'admin'], $request->boolean('remember'))) {
-            $request->session()->regenerate();
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $request->boolean('remember'))) {
+            $user = Auth::user();
+            if ($user->isAdmin()) {
+                $request->session()->regenerate();
 
-            return redirect()->route('admin.dashboard')->with('success', 'Welcome to Admin Control Center.');
+                return redirect()->route('admin.dashboard')->with('success', 'Welcome to Admin Control Center.');
+            }
+
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'This account does not have administrator privileges.',
+            ])->onlyInput('email');
         }
 
         return back()->withErrors([
-            'email' => 'Invalid admin credentials.',
+            'email' => 'Invalid administrator credentials.',
         ])->onlyInput('email');
     }
 
     public function showBrandLogin()
     {
-        if (Auth::check() && Auth::user()->isBrand()) {
+        if (Auth::check() && (Auth::user()->isBrand() || Auth::user()->isAdmin())) {
             return redirect()->route('brand.dashboard');
         }
 
@@ -104,10 +113,19 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password, 'role' => 'brand'], $request->boolean('remember'))) {
-            $request->session()->regenerate();
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $request->boolean('remember'))) {
+            $user = Auth::user();
+            if ($user->isBrand() || $user->isAdmin()) {
+                $request->session()->regenerate();
 
-            return redirect()->route('brand.dashboard')->with('success', 'Welcome to Brand Studio.');
+                return redirect()->route('brand.dashboard')->with('success', 'Welcome to Brand Studio.');
+            }
+
+            Auth::logout();
+
+            return back()->withErrors([
+                'email' => 'This account does not have brand client access.',
+            ])->onlyInput('email');
         }
 
         return back()->withErrors([

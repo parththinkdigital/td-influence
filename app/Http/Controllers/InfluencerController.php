@@ -34,7 +34,7 @@ class InfluencerController extends Controller
             return null;
         }
 
-        if (! $user->talentProfile && ($user->role === 'talent' || $user->role === 'influencer')) {
+        if (! $user->talentProfile) {
             return TalentProfile::firstOrCreate(
                 ['user_id' => $user->id],
                 [
